@@ -1,0 +1,63 @@
+// create the character skins
+module character_select(input basys_clock, btnC, btnU, btnR, btnL, btnD, input [15:0] sw, 
+                        output reg [15:0] led, output [7:0] JB);
+    wire frame_begin, sending_pixels, sample_pixel;
+    wire [12:0] pixel_index;
+    wire clk_4,clk_7,clk_8,count_4,count_7,count_8, clk_6p25, clk_25M;
+    reg [15:0] oled_data;
+    
+    flexible_clock unit6p25Mhz (basys_clock, 7, clk_6p25);
+    flexible_clock unit4hz (basys_clock, 12499999, clk_4);
+    flexible_clock unit7hz (basys_clock, 7142856, clk_7);
+    flexible_clock unit8hz (basys_clock, 6249999, clk_8);
+    flexible_clock unit25Mhz (basys_clock, 1, clk_25M);
+    
+    Oled_Display characters (.clk(clk_6p25), .reset(0), .frame_begin(frame_begin),
+    .sending_pixels(sending_pixels), .sample_pixel(sample_pixel), .pixel_index(pixel_index),
+    .pixel_data(oled_data), .cs(JB[0]), .sdin(JB[1]), .sclk(JB[3]), .d_cn(JB[4]), .resn(JB[5]),
+    .vccen(JB[6]), .pmoden(JB[7]));
+    
+    wire [6:0] x;
+    wire [5:0] y;
+    assign x = pixel_index % 96;
+    assign y = pixel_index / 96;                    
+    wire [13:0] circle_1, circle_2, circle_3, circle_4, circle_5, circle_6, circle_7, circle_8, circle_9, circle_10;
+    assign circle_6 = (x - 50)*(x - 50) + (y - 43)*(y - 43); // (x^2) + (y^2)  
+    assign circle_7 = (x - 70)*(x - 70) + (y - 43)*(y - 43); // (x^2) + (y^2)                       
+    assign circle_8 = (x - 90)*(x - 90) + (y - 43)*(y - 43); // (x^2) + (y^2) 
+    assign circle_9 = (x - 60)*(x - 60) + (y - 53)*(y - 53); // (x^2) + (y^2)  
+    assign circle_10 = (x - 80)*(x - 80) + (y - 53)*(y - 53); // (x^2) + (y^2)
+    
+    assign circle_1 = (x - 50)*(x - 50) + (y - 10)*(y - 10); // (x^2) + (y^2)  
+    assign circle_2 = (x - 70)*(x - 70) + (y - 10)*(y - 10); // (x^2) + (y^2)                       
+    assign circle_3 = (x - 90)*(x - 90) + (y - 10)*(y - 10); // (x^2) + (y^2) 
+    assign circle_4 = (x - 60)*(x - 60) + (y - 20)*(y - 20); // (x^2) + (y^2)  
+    assign circle_5 = (x - 80)*(x - 80) + (y - 20)*(y - 20); // (x^2) + (y^2)
+    
+    always @ (posedge clk_25M)
+    begin
+        if (circle_1 <= 25)
+            oled_data <= 16'b11111_000000_00000; //red
+        else if (circle_2 <= 25)
+            oled_data <= 16'b11111_111111_00000; //yellow
+        else if (circle_3 <= 25)
+            oled_data <= 16'b10110_101001_11010; //purple
+        else if (circle_4 <= 25)
+            oled_data <= 16'b00000_000000_11111; //blue 
+        else if (circle_5 <= 25)
+            oled_data <= 16'b11111_101001_00000; //orange
+        else if (circle_6 <= 25)
+            oled_data <= 16'b11111_000000_01011; //pink
+        else if (circle_7 <= 25)
+            oled_data <= 16'b10000_100000_10000; //grey
+        else if (circle_8 <= 25)
+            oled_data <= 16'b11111_111111_11111; //white
+        else if (circle_9 <= 25)
+            oled_data <= 16'b10011_110000_11101; //light blue
+        else if (circle_10 <= 25)
+            oled_data <= 16'b01110_000110_01000; //magenta
+        else
+            oled_data <= 16'b00000_000000_00000; //black background
+    end
+    
+endmodule
