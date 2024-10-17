@@ -62,6 +62,7 @@ module character_select(input basys_clock, btnC, btnU, btnR, btnL, btnD, input [
 
     reg [4:0] led_high;
     reg [4:0] led_low;
+
     
     always @ (posedge clk_25M)
     begin
@@ -109,26 +110,105 @@ module character_select(input basys_clock, btnC, btnU, btnR, btnL, btnD, input [
             oled_data <= 16'b01110_000110_01000; //magenta
 
         else if (sw[0] == 1'b1 && (circle_6 >= 25 && circle_6 <= 29) && (led_low == sw_low)) // if switch is on, then can choose player
-                oled_data <= 16'b11111_111111_11111; //white
+            oled_data <= 16'b11111_111111_11111; //white
         else if (sw[1] == 1'b1 && (circle_7 >= 25 && circle_7 <= 29) && (led_low == sw_low)) // if switch is on, then can choose player
-                oled_data <= 16'b11111_111111_11111; //white
+            oled_data <= 16'b11111_111111_11111; //white
         else if (sw[2] == 1'b1 && (circle_8 >= 25 && circle_8 <= 29) && (led_low == sw_low)) // if switch is on, then can choose player
-                oled_data <= 16'b11111_111111_11111; //white 
+            oled_data <= 16'b11111_111111_11111; //white 
         else if (sw[3] == 1'b1 && (circle_9 >= 25 && circle_9 <= 29) && (led_low == sw_low)) // if switch is on, then can choose player
-                oled_data <= 16'b11111_111111_11111; //white    
+            oled_data <= 16'b11111_111111_11111; //white    
         else if (sw[4] == 1'b1 && (circle_10 >= 25 && circle_10 <= 29) && (led_low == sw_low)) // if switch is on, then can choose player
-                oled_data <= 16'b11111_111111_11111; //white              
+            oled_data <= 16'b11111_111111_11111; //white              
                 
         else if (sw[11] == 1'b1 && (circle_1 >= 25 && circle_1 <= 29) && (led_high == sw_high)) // if switch is on, then can choose player
-                oled_data <= 16'b11111_111111_11111; //white
+            oled_data <= 16'b11111_111111_11111; //white
         else if (sw[12] == 1'b1 && (circle_2 >= 25 && circle_2 <= 29) && (led_high == sw_high)) // if switch is on, then can choose player
-                oled_data <= 16'b11111_111111_11111; //white
+            oled_data <= 16'b11111_111111_11111; //white
         else if (sw[13] == 1'b1 && (circle_3 >= 25 && circle_3 <= 29) && (led_high == sw_high)) // if switch is on, then can choose player
-                oled_data <= 16'b11111_111111_11111; //white 
+            oled_data <= 16'b11111_111111_11111; //white 
         else if (sw[14] == 1'b1 && (circle_4 >= 25 && circle_4 <= 29) && (led_high == sw_high)) // if switch is on, then can choose player
-                oled_data <= 16'b11111_111111_11111; //white    
+            oled_data <= 16'b11111_111111_11111; //white    
         else if (sw[15] == 1'b1 && (circle_5 >= 25 && circle_5 <= 29) && (led_high == sw_high)) // if switch is on, then can choose player
-                oled_data <= 16'b11111_111111_11111; //white                                            
+            oled_data <= 16'b11111_111111_11111; //white   
+          
+        else if (x == 2 && y >= 6 && y <= 13) // t left
+            oled_data <= 16'b11111_111111_11111;
+        else if (x >= 2 && x <= 16 && y == 9) // t middle
+            oled_data <= 16'b11111_111111_11111;        
+          
+        else if (x == 2 && y >= 15 && y <= 22) // line C left
+            oled_data <= 16'b11111_111111_11111; //white                     
+        else if (x == 16 && y >= 15 && y <= 22) // line C right
+            oled_data <= 16'b11111_111111_11111; //white                 
+        else if (x >= 2 && x <= 16 && y == 22) // line C bottom
+            oled_data <= 16'b11111_111111_11111; //white                       
+
+        else if (x == 2 && y >= 24 && y <= 31) // line E left
+            oled_data <= 16'b11111_111111_11111; //white                 
+        else if (x == 8 && y >= 24 && y <= 31) // line E middle
+            oled_data <= 16'b11111_111111_11111; //white     
+        else if (x == 16 && y >= 24 && y <= 31) // line E last
+            oled_data <= 16'b11111_111111_11111; //white   
+        else if (x >= 2 && x <= 16 && y == 31) // line E bottom
+            oled_data <= 16'b11111_111111_11111; //white       
+  
+        else if (x == 16 && y >= 33 && y <= 40) // line L last
+            oled_data <= 16'b11111_111111_11111; //white   
+        else if (x >= 2 && x <= 16 && y == 40) // line L bottom
+            oled_data <= 16'b11111_111111_11111; //white  
+  
+        else if (x == 2 && y >= 42 && y <= 49) // line E left
+            oled_data <= 16'b11111_111111_11111; //white                 
+        else if (x == 8 && y >= 42 && y <= 49) // line E middle
+            oled_data <= 16'b11111_111111_11111; //white     
+        else if (x == 16 && y >= 42 && y <= 49) // line E last
+            oled_data <= 16'b11111_111111_11111; //white   
+        else if (x >= 2 && x <= 16 && y == 49) // line E bottom
+            oled_data <= 16'b11111_111111_11111; //white         
+  
+        else if (x == 2 && y >= 51 && y <= 58) // line S left
+            oled_data <= 16'b11111_111111_11111; //white                 
+        else if (x == 8 && y >= 51 && y <= 58) // line S middle
+            oled_data <= 16'b11111_111111_11111; //white     
+        else if (x == 16 && y >= 51 && y <= 58) // line S last
+            oled_data <= 16'b11111_111111_11111; //white    
+        else if (x >= 2 && x <= 8 && y == 58) // line S bottom
+            oled_data <= 16'b11111_111111_11111; //white        
+        else if (x >= 8 && x <= 16 && y == 51) // line S top
+            oled_data <= 16'b11111_111111_11111; //white        
+  
+              
+        else if (x == 20 && y >= 6 && y <= 24) // line P left
+            oled_data <= 16'b11111_111111_11111; //white                     
+        else if (x >= 20 && x <= 29 && y == 6) // line P top
+            oled_data <= 16'b11111_111111_11111; //white                 
+        else if (x >= 20 && x <= 29 && y == 14) // line P middle
+            oled_data <= 16'b11111_111111_11111; //white              
+        else if (x == 29 && y >= 6 && y <= 14) // line P right
+            oled_data <= 16'b11111_111111_11111; //white   
+        else if (x == 35 && y >= 6 && y <= 24) // 1         
+            oled_data <= 16'b11111_111111_11111; //white  
+            
+        else if (x == 20 && y >= 40 && y <= 58) // line P left
+            oled_data <= 16'b11111_111111_11111; //white                     
+        else if (x >= 20 && x <= 29 && y == 40) // line P top
+            oled_data <= 16'b11111_111111_11111; //white                 
+        else if (x >= 20 && x <= 29 && y == 48) // line P middle
+            oled_data <= 16'b11111_111111_11111; //white              
+        else if (x == 29 && y >= 40 && y <= 48) // line P right
+            oled_data <= 16'b11111_111111_11111; //white   
+        else if (x >= 31 && x <= 40 && y == 40) // 2 top         
+            oled_data <= 16'b11111_111111_11111; //white             
+        else if (x >= 31 && x <= 40 && y == 48) // 2 middle         
+            oled_data <= 16'b11111_111111_11111; //white              
+        else if (x >= 31 && x <= 40 && y == 58) // 2 bottom         
+            oled_data <= 16'b11111_111111_11111; //white 
+        else if (x == 31 && y >= 48 && y <= 58) // 2 left             
+            oled_data <= 16'b11111_111111_11111; //white  
+        else if (x == 40 && y >= 40 && y <= 48) // 2 right             
+                oled_data <= 16'b11111_111111_11111; //white             
+                      
+                                                                                          
         else        
             oled_data <= 16'b00000_000000_00000; //black background
     end
