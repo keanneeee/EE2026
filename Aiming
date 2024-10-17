@@ -1,0 +1,249 @@
+module aiming(input [6:0] x_input, y_input, r_input, input [12:0] pixel_index, input basys_clock, btnU, btnD, btnC, output reg [4:0] direction = 0, output reg [15:0] oled_data, output reg [15:0] led, output reg [4:0] power);
+    wire clk_25M, clk_20;
+    wire [6:0] x, y;
+    reg [3:0] radius;
+    reg [6:0] x_centre;
+    reg [6:0] y_centre;
+    reg [31:0] change_counter_aim; // Counter to slow down the updates
+    reg [31:0] change_counter_move;
+    reg moving_status = 0;
+    reg [4:0] move_distance;
+    reg initialized = 0;  // Flag to check if the circle is initialized
+        
+    assign x = pixel_index % 96;
+    assign y = pixel_index / 96;
+    
+    flexible_clock unit25Mhz (basys_clock, 1, clk_25M);
+    flexible_clock unit20hz (basys_clock, 2499999, clk_20);
+    
+    // movement loop
+    always @ (posedge clk_20) begin
+        
+        if (!initialized) begin
+            x_centre <= x_input;
+            y_centre <= y_input;
+            radius <= r_input;
+            initialized <= 1; 
+        end
+        
+        if (btnC && !moving_status && power <= 15) begin
+            power <= power + 1;
+            led[power] <= 1;  
+        end else if (!btnC && !moving_status && power >= 0) begin
+            moving_status <= 1;
+            move_distance <= power; 
+            led[15:0] <= 16'b0000000000000000;  
+        end
+        
+        if (moving_status) begin
+            if (move_distance > 0) begin
+                if (direction == 0) begin
+                    if (x_centre + radius <= 94)
+                        // move east
+                        x_centre <= x_centre + 1;
+                end else if (direction == 1) begin
+                    if (x_centre + radius <= 93 && y_centre - radius >= 1)begin
+                        // move ENE
+                        x_centre <= x_centre + 2;
+                        y_centre <= y_centre - 1;
+                    end
+                end else if (direction == 2) begin
+                    if (x_centre + radius <= 94 && y_centre - radius >= 1) begin
+                        // move NE
+                        x_centre <= x_centre + 1;
+                        y_centre <= y_centre - 1;
+                    end
+                end else if (direction == 3) begin
+                    if (x_centre + radius <= 94 && y_centre - radius >= 2) begin
+                        // move NNE
+                        x_centre <= x_centre + 1;
+                        y_centre <= y_centre - 2;
+                    end
+                end else if (direction == 4) begin
+                    if (y_centre - radius >= 1)
+                        // move North
+                        y_centre <= y_centre - 1;
+                end else if (direction == 5) begin
+                    if (x_centre - radius >= 1 && y_centre - radius >= 2) begin
+                        // move NNW
+                        x_centre <= x_centre - 1;
+                        y_centre <= y_centre - 2;
+                    end
+                end else if (direction == 6) begin
+                    if (x_centre - radius >= 1 && y_centre - radius >= 1) begin
+                        // move NW
+                        x_centre <= x_centre - 1;
+                        y_centre <= y_centre - 1;
+                    end
+                end else if (direction == 7) begin
+                    if (x_centre - radius >= 2 && y_centre - radius >= 1) begin
+                        // move WNW
+                        x_centre <= x_centre - 2;
+                        y_centre <= y_centre - 1;
+                    end
+                end else if (direction == 8) begin
+                    if (x_centre - radius >= 1)// move West
+                        x_centre <= x_centre - 1;
+                end else if (direction == 9) begin
+                    if (x_centre - radius >= 2 && y_centre + radius <= 62) begin
+                        // move WSW
+                        x_centre <= x_centre - 2;
+                        y_centre <= y_centre + 1;
+                    end
+                end else if (direction == 10) begin
+                    if (x_centre - radius >= 1 && y_centre + radius <= 62) begin
+                        // move SW
+                        x_centre <= x_centre - 1;
+                        y_centre <= y_centre + 1;
+                    end
+                end else if (direction == 11) begin
+                    if (x_centre - radius >= 1 && y_centre + radius <= 61) begin
+                        // move SSW
+                        x_centre <= x_centre - 1;
+                        y_centre <= y_centre + 2;
+                    end
+                end else if (direction == 12) begin
+                    if (y_centre + radius <= 62)
+                        // move South
+                        y_centre <= y_centre + 1;
+                end else if (direction == 13) begin
+                    if (x_centre + radius <= 94 && y_centre + radius <= 61) begin
+                        // move SSE
+                        x_centre <= x_centre + 1;
+                        y_centre <= y_centre + 2;
+                    end
+                end else if (direction == 14) begin
+                    if (x_centre + radius <= 94 && y_centre + radius <= 62) begin
+                        // move SE
+                        x_centre <= x_centre + 1;
+                        y_centre <= y_centre + 1;
+                    end
+                end else if (direction == 15) begin
+                    if (x_centre + radius <= 93 && y_centre + radius <= 62) begin
+                        // move ESE
+                        x_centre <= x_centre + 2;
+                        y_centre <= y_centre + 1;
+                    end
+                end
+                move_distance <= move_distance - 1;
+            end else begin
+                moving_status <= 0;
+                power <= 0;
+            end
+        end
+    end
+    
+    // aiming oled data loop 
+    always @ (posedge clk_25M) begin
+        
+        if (change_counter_aim == 2500000) begin // Increase this value to slow it down
+            if (btnU) begin
+                if (direction == 15)
+                    direction <= 0;
+                else 
+                    direction <= direction + 1;
+            end else if (btnD) begin
+                if (direction == 0) 
+                    direction <= 15;
+                else 
+                    direction <= direction - 1;
+            end
+            change_counter_aim <= 0; 
+        end else begin
+            change_counter_aim <= change_counter_aim + 1; 
+        end
+
+        if (!moving_status) begin  
+            if (((x - x_centre) * (x - x_centre) + (y - y_centre) * (y - y_centre)) <= (radius * radius + 1)) begin
+                oled_data <= 16'b1111100000000000; // circle
+            end        
+            else if (direction == 0) begin 
+                if ((x == x_centre + radius + 2 && y >= y_centre -  1 && y <= y_centre +  1) || (x == x_centre + radius + 3 && y == y_centre))
+                    oled_data <= 16'b1111100000000000; // East
+                else
+                    oled_data <= 16'b0000000000000000; 
+            end else if (direction == 1) begin
+                if ((x == x_centre + radius + 2 && y >= y_centre - 4 && y <= y_centre - 3) || (x == x_centre + radius + 1 && y == y_centre - 4)) 
+                    oled_data <= 16'b1111100000000000; // ENE
+                else 
+                    oled_data <= 16'b0000000000000000;
+            end else if (direction == 2) begin
+                if ((y == y_centre - 6 && x >= x_centre + 5 && x <= x_centre + 6) || (y == y_centre - 5 && x == x_centre + 6))
+                    oled_data <= 16'b1111100000000000; // North East
+                else
+                    oled_data <= 16'b0000000000000000;
+            end else if (direction == 3) begin
+                if((y == y_centre - radius - 2 && x <= x_centre + 4 && x >= x_centre + 3) || (y == y_centre - radius - 1 && x == x_centre + 4))
+                    oled_data <= 16'b1111100000000000; // NNE
+                else
+                    oled_data <= 16'b0000000000000000;
+            end else if (direction == 4) begin
+                if ((y == y_centre - radius - 2 && x >= x_centre -  1 && x <= x_centre +  1) || (y == y_centre - radius - 3 && x == x_centre)) 
+                    oled_data <= 16'b1111100000000000; // North
+                else
+                    oled_data <= 16'b0000000000000000; 
+            end else if (direction == 5) begin
+                if((y == y_centre - radius - 2 && x >= x_centre - 4 && x <= x_centre - 3) || (y == y_centre - radius - 1 && x == x_centre - 4))
+                    oled_data <= 16'b1111100000000000; // NNW
+                else
+                    oled_data <= 16'b0000000000000000;
+            end else if (direction == 6) begin
+                if ((y == y_centre - 6 && x <= x_centre - 5 && x >= x_centre - 6) || (y == y_centre - 5 && x == x_centre - 6))
+                    oled_data <= 16'b1111100000000000; // North West
+                else
+                    oled_data <= 16'b0000000000000000;
+            end else if (direction == 7) begin
+                if((x == x_centre - radius - 2 && y >= y_centre - 4 && y <= y_centre - 3) || (x == x_centre - radius - 1 && y == y_centre - 4)) 
+                    oled_data <= 16'b1111100000000000; // WNW
+                else
+                    oled_data <= 16'b0000000000000000;
+            end else if (direction == 8) begin
+                if ((x == x_centre - radius - 2 && y >= y_centre -  1 && y <= y_centre +  1) || (x == x_centre - radius - 3 && y == y_centre))
+                    oled_data <= 16'b1111100000000000; // West
+                else
+                    oled_data <= 16'b0000000000000000;
+            end else if (direction == 9) begin
+                if((x == x_centre - radius - 2 && y <= y_centre + 4 && y >= y_centre + 3) || (x == x_centre - radius - 1 && y == y_centre + 4)) 
+                    oled_data <= 16'b1111100000000000; // WSW
+                else 
+                    oled_data <= 16'b0000000000000000;
+            end else if (direction == 10) begin
+                if ((y == y_centre + 6 && x <= x_centre - 5 && x >= x_centre - 6) || (y == y_centre + 5 && x == x_centre - 6)) 
+                    oled_data <= 16'b1111100000000000; // South West
+                else
+                    oled_data <= 16'b0000000000000000;
+            end else if (direction == 11) begin
+                if((y == y_centre + radius + 2 && x >= x_centre - 4 && x <= x_centre - 3) || (y == y_centre + radius + 1 && x == x_centre - 4)) 
+                    oled_data <= 16'b1111100000000000; // SSW
+                else
+                    oled_data <= 16'b0000000000000000;
+            end else if (direction == 12) begin
+                if ((y == y_centre + radius + 2 && x >= x_centre -  1 && x <= x_centre +  1) || (y == y_centre + radius + 3 && x == x_centre)) 
+                    oled_data <= 16'b1111100000000000; // South
+                else
+                    oled_data <= 16'b0000000000000000; 
+            end else if (direction == 13) begin
+                if((y == y_centre + radius + 2 && x <= x_centre + 4 && x >= x_centre + 3) || (y == y_centre + radius + 1 && x == x_centre + 4))
+                    oled_data <= 16'b1111100000000000; // SSE
+                else
+                    oled_data <= 16'b0000000000000000;
+            end else if (direction == 14) begin
+                if ((y == y_centre + 6 && x >= x_centre + 5 && x <= x_centre + 6) || (y == y_centre + 5 && x == x_centre + 6))
+                    oled_data <= 16'b1111100000000000; // South East
+                else
+                    oled_data <= 16'b0000000000000000; 
+            end else if (direction == 15) begin
+                if((x == x_centre + radius + 2 && y <= y_centre + 4 && y >= y_centre + 3) || (x == x_centre + radius + 1 && y == y_centre + 4))
+                    oled_data <= 16'b1111100000000000; // ESE
+                else 
+                    oled_data <= 16'b0000000000000000;
+            end else
+                oled_data <= 16'b0000000000000000;
+        end else begin
+            if (((x - x_centre) * (x - x_centre) + (y - y_centre) * (y - y_centre)) <= (radius * radius + 1))
+                oled_data <= 16'b1111100000000000; // circle
+            else
+                oled_data <= 16'b0000000000000000;
+        end
+    end
+endmodule
