@@ -1,5 +1,4 @@
-module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD, output [7:0] JB);
-    // output [15:0] led
+module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD, output [7:0] JB, output reg [15:0] led);
     wire frame_begin, sending_pixels, sample_pixel;
     wire [12:0] pixel_index;
     wire [15:0] led_P1, led_P2;
@@ -52,6 +51,11 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD, output [7:0
                 end
             end
         endcase
+        
+        if(turn_P1)
+            led <= led_P1;
+        else
+            led <= led_P2;
     end
     
     // overlap oled_data using bitwise OR
@@ -195,22 +199,23 @@ module aiming(input [7:0] x_input, y_input, r_input, input turn, input [12:0] pi
 
     // aiming oled data loop 
     always @ (posedge clk_25M) begin
-        
-        if (change_counter_aim == 2500000) begin // Increase this value to slow it down
-            if (btnU) begin
-                if (direction == 15)
-                    direction <= 0;
-                else 
-                    direction <= direction + 1;
-            end else if (btnD) begin
-                if (direction == 0) 
-                    direction <= 15;
-                else 
-                    direction <= direction - 1;
+        if (turn) begin
+            if (change_counter_aim == 2500000) begin // Increase this value to slow it down
+                if (btnU) begin
+                    if (direction == 15)
+                        direction <= 0;
+                    else 
+                        direction <= direction + 1;
+                end else if (btnD) begin
+                    if (direction == 0) 
+                        direction <= 15;
+                    else 
+                        direction <= direction - 1;
+                end
+                change_counter_aim <= 0; 
+            end else begin
+                change_counter_aim <= change_counter_aim + 1; 
             end
-            change_counter_aim <= 0; 
-        end else begin
-            change_counter_aim <= change_counter_aim + 1; 
         end
 
         if (!moving_status && turn) begin  
