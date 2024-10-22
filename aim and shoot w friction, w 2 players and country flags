@@ -1,0 +1,378 @@
+module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD, output [7:0] JB, output reg [15:0] led);
+    wire frame_begin, sending_pixels, sample_pixel;
+    wire [12:0] pixel_index;
+    wire [15:0] led_P1, led_P2;
+    reg [15:0] oled_data;
+    wire [15:0] oled_data_P1, oled_data_P2;
+    wire [4:0] power_P1, power_P2, direction_P1, direction_P2;
+    reg reset = 0; 
+    wire clk_6p25, clk_20, clk_25M;
+    reg turn_P1 = 1,turn_P2 = 0;
+    wire [4:0] P1_selected = 1; // use seans code to manipulate this part
+    wire [4:0] P2_selected = 4;
+    
+    flexible_clock unit6p25Mhz (basys_clock, 7, clk_6p25);
+    flexible_clock unit25Mhz (basys_clock, 1, clk_25M);
+    flexible_clock unit20hz (basys_clock, 2499999, clk_20);
+    
+    aiming unit_P1(20, 32, 6, turn_P1, pixel_index, 16'b1111100000000000, P1_selected, basys_clock, btnU, btnD, btnC, direction_P1, led_P1, power_P1, oled_data_P1);
+    aiming unit_P2(75, 32, 6, turn_P2, pixel_index, 16'b0000000000011111, P2_selected, basys_clock, btnU, btnD, btnC, direction_P2, led_P2, power_P2, oled_data_P2);
+    
+    wire btnC_debounced;
+    debounce unit_btnC_d (basys_clock, btnC, btnC_debounced);
+
+    reg [1:0] turn_state = 0;  
+    reg [27:0] delay_counter = 0; 
+    
+    // turn loop
+    always @ (posedge basys_clock) begin
+        case (turn_state)
+            0: begin
+                if (btnC_debounced) begin
+                    turn_state <= 1; 
+                end
+            end
+            1: begin
+                if (!btnC_debounced) begin
+                    turn_state <= 2; 
+                    delay_counter <= 0;
+                end
+            end
+            2: begin
+                if (delay_counter < 100000000) begin // delay for 1s b4 switching turns
+                    delay_counter <= delay_counter + 1; 
+                end else begin
+                    if (turn_P1) begin
+                        turn_P1 <= 0;
+                        turn_P2 <= 1;
+                    end else begin
+                        turn_P1 <= 1;
+                        turn_P2 <= 0;
+                    end
+                    turn_state <= 0;
+                end
+            end
+        endcase
+        
+        if(turn_P1)
+            led <= led_P1;
+        else
+            led <= led_P2;
+    end
+    
+    // overlap oled_data using bitwise OR
+    always @(posedge clk_25M) begin
+        oled_data <= oled_data_P1 | oled_data_P2;
+    end
+    
+    Oled_Display unit_Oled(
+        .clk(clk_6p25), 
+        .reset(0), 
+        .frame_begin(frame_begin),
+        .sending_pixels(sending_pixels), 
+        .sample_pixel(sample_pixel),
+        .pixel_index(pixel_index),
+        .pixel_data(oled_data),
+        .cs(JB[0]), 
+        .sdin(JB[1]), 
+        .sclk(JB[3]), 
+        .d_cn(JB[4]), 
+        .resn(JB[5]),
+        .vccen(JB[6]), 
+        .pmoden(JB[7])
+    );
+
+endmodule
+
+
+
+module aiming(input [7:0] x_input, y_input, r_input, input turn, input [12:0] pixel_index, input [15:0] arrow_colour, input [4:0] player_selected, input basys_clock, btnU, btnD, btnC, output reg [4:0] direction = 0, output reg [15:0] led, output reg [4:0] power, output reg [15:0] oled_data);
+    wire clk_25M, clk_20;
+    wire [7:0] x, y;
+    reg [7:0] radius, x_centre, y_centre;
+    reg [31:0] change_counter_aim, change_counter_move; // Counter to slow down the updates
+    reg moving_status = 0;
+    reg [4:0] move_distance;
+    reg [4:0] velocity;
+    parameter friction = 8;
+    reg initialized = 0;  // Flag to check if the circle is initialized
+    //reg collision_wall = 0;
+    reg [15:0] country_flag;
+    
+        
+    assign x = pixel_index % 96;
+    assign y = pixel_index / 96;
+    
+    flexible_clock unit25Mhz (basys_clock, 1, clk_25M);
+    flexible_clock unit20hz (basys_clock, 2499999, clk_20); 
+    
+    always @ (posedge basys_clock) begin
+    
+        if (player_selected == 0) begin // france
+            if (x < x_centre - 2)
+                country_flag <= 16'b0000000100111010; // blue #002654
+            else if (x > x_centre + 2)
+                country_flag <= 16'b1110100101000111; // red #ED2939
+            else
+                country_flag <= 16'b1111111111111111; // white
+                
+        end else if (player_selected == 1) begin // brazil
+            if ((x >= x_centre - 2 && x <= x_centre + 2 && y >= y_centre - 1 && y <= y_centre + 1) || (x >= x_centre - 1 && x <= x_centre + 1 && y >= y_centre - 2 && y <= y_centre + 2))
+                if ((x == x_centre && y == y_centre) || (x == x_centre && y == y_centre - 1) || (x == x_centre - 1 && y == y_centre - 1) || (x == x_centre + 1 && y == y_centre) || (x == x_centre + 2 && y == y_centre))
+                    country_flag <= 16'b1111111111111111; // white
+                else 
+                    country_flag <= 16'b0000000100001101; // blue #012169
+            else if ((x == x_centre && y >= y_centre - 4 && y <= y_centre + 4) || 
+                    (x >= x_centre - 1 && x <= x_centre + 1 && y >= y_centre - 3 && y <= y_centre + 3) ||
+                    (x >= x_centre - 2 && x <= x_centre + 2 && y >= y_centre - 2 && y <= y_centre + 2) ||
+                    (x >= x_centre - 3 && x <= x_centre + 3 && y >= y_centre - 1 && y <= y_centre + 1) ||
+                    (y == y_centre && x >= x_centre - 4 && x <= x_centre + 4))
+                country_flag <= 16'b1111111011100000; // yellow #FEDD00
+            else
+                country_flag <= 16'b00000_100110_00111; // green #009739
+                
+        end else if (player_selected == 2) begin // germany
+            if (y < y_centre - 2)
+                country_flag <= 16'b0000000000000000; // black
+            else if (y > y_centre + 2)
+                country_flag <= 16'b1111111001100000; // gold #FFCC00
+            else
+                country_flag <= 16'b1101100000000000; // red #DD0000
+                
+        end else if (player_selected == 3) begin // england
+            if ((x >= x_centre - 5 && x <= x_centre + 5 && y >= y_centre - 1 && y <= y_centre + 1) ||
+                (x >= x_centre - 1 && x <= x_centre + 1 && y >= y_centre - 5 && y <= y_centre + 5))
+                country_flag <= 16'b11001_000100_00100; // red #CE1124
+            else
+                country_flag <= 16'b1111111111111111; // white    
+                
+        end else if (player_selected == 4) begin // argentina
+            if (y < y_centre - 2 || y > y_centre + 2)
+                country_flag <= 16'b0110110101111100; // blue #6CACE4
+            else if (((x == x_centre + 2 || x == x_centre - 2) && y == y_centre) ||
+                    ((y == y_centre + 2 || y == y_centre - 2) && x == x_centre) ||
+                    ((x == x_centre + 2 || x == x_centre - 2) && y == y_centre - 2) ||
+                    ((x == x_centre + 2 || x == x_centre - 2) && y == y_centre + 2) ||
+                    (x <= x_centre + 1 && x >= x_centre - 1 && y <= y_centre + 1 && y >= y_centre - 1))
+                country_flag <= 16'b1111110111000011; // yellow #FFB81C
+            else 
+                country_flag <= 16'b1111111111111111; // white
+        end
+    end
+
+    // movement loop
+    always @ (posedge clk_20) begin
+        
+        if (!initialized) begin
+            x_centre <= x_input;
+            y_centre <= y_input;
+            radius <= r_input;
+            initialized <= 1; 
+        end
+        
+        if (turn) begin
+            if (btnC && !moving_status && power <= 10) begin
+                // will add in item that makes power go to 15
+                power <= power + 1;
+                led[power] <= 1;  
+            end else if (!btnC && !moving_status && power >= 0) begin
+                //collision_wall <= 0;
+                moving_status <= 1;
+                velocity <= power;
+                led[15:0] <= 16'b000000000000000;  
+                //led[15] <= (collision_wall) ? 1 : 0;
+            end
+            
+            if (moving_status) begin      
+                if (velocity >= 1) begin
+                    // Apply friction by reducing the velocity each cycle
+                    if (direction == 0) begin
+                        //move east
+                        x_centre <= (x_centre + radius + velocity >= 94) ? 95 - radius : x_centre + velocity;  
+                    end else if (direction == 1) begin
+                        // move ENE
+                        x_centre <= (x_centre + radius + velocity >= 94) ? 95 - radius : x_centre + velocity;
+                        y_centre <= ($signed(y_centre - radius - (velocity/2)) <= 1) ? radius : y_centre - (velocity/2);
+                    end else if (direction == 2) begin
+                        // move NE
+                        x_centre <= (x_centre + radius + velocity >= 94) ? 95 - radius : x_centre + velocity;
+                        y_centre <= ($signed(y_centre - radius - velocity) <= 1) ? radius : y_centre - velocity;
+                    end else if (direction == 3) begin
+                        // move NNE
+                        x_centre <= (x_centre + radius + (velocity/2) >= 94) ? 95 - radius : x_centre + (velocity/2);
+                        y_centre <= ($signed(y_centre - radius - velocity) <= 1) ? radius : y_centre - velocity;
+                    end else if (direction == 4) begin
+                        // move North
+                        y_centre <= ($signed(y_centre - radius - velocity) <= 1) ? radius : y_centre - velocity;
+                    end else if (direction == 5) begin
+                        // move NNW
+                        x_centre <= ($signed(x_centre - radius - (velocity/2)) <= 1) ? radius : x_centre - (velocity/2);
+                        y_centre <= ($signed(y_centre - radius - velocity) <= 1) ? radius : y_centre - velocity;
+                    end else if (direction == 6) begin
+                        // move NW
+                        x_centre <= ($signed(x_centre - radius - velocity) <= 1) ? radius : x_centre - velocity;
+                        y_centre <= ($signed(y_centre - radius - velocity) <= 1) ? radius : y_centre - velocity;
+                    end else if (direction == 7) begin
+                        // move WNW
+                        x_centre <= ($signed(x_centre - radius - velocity) <= 1) ? radius : x_centre - velocity;
+                        y_centre <= ($signed(y_centre - radius - (velocity/2)) <= 1) ? radius : y_centre - (velocity/2);
+                    end else if (direction == 8) begin
+                        // move West
+                        x_centre <= ($signed(x_centre - radius - velocity) <= 1) ? radius : x_centre - velocity;
+                    end else if (direction == 9) begin
+                        // move WSW
+                        x_centre <= ($signed(x_centre - radius - velocity) <= 1) ? radius : x_centre - velocity;
+                        y_centre <= (y_centre + radius + (velocity/2) >= 62) ? 63 - radius : y_centre + (velocity/2);
+                    end else if (direction == 10) begin
+                        // move SW
+                        x_centre <= ($signed(x_centre - radius - velocity) <= 1) ? radius : x_centre - velocity;
+                        y_centre <= (y_centre + radius + velocity >= 62) ? 63 - radius : y_centre + velocity;
+                    end else if (direction == 11) begin
+                        // move SSW
+                        x_centre <= ($signed(x_centre - radius - (velocity/2)) <= 1) ? radius : x_centre - (velocity/2);
+                        y_centre <= (y_centre + radius + velocity >= 62) ? 63 - radius : y_centre + velocity;
+                    end else if (direction == 12) begin
+                        // move South
+                        y_centre <= (y_centre + radius + velocity >= 62) ? 63 - radius : y_centre + velocity;
+                    end else if (direction == 13) begin
+                        // move SSE
+                        x_centre <= (x_centre + radius + (velocity/2) >= 94) ? 95 - radius : x_centre + (velocity/2);
+                        y_centre <= (y_centre + radius + velocity >= 62) ? 63 - radius : y_centre + velocity;
+                    end else if (direction == 14) begin
+                        // move SE
+                        x_centre <= (x_centre + radius + velocity >= 94) ? 95 - radius : x_centre + velocity;
+                        y_centre <= (y_centre + radius + velocity >= 62) ? 63 - radius : y_centre + velocity;
+                    end else if (direction == 15) begin
+                        // move ESE
+                        x_centre <= (x_centre + radius + velocity >= 94) ? 95 - radius : x_centre + velocity;
+                        y_centre <= (y_centre + radius + (velocity/2) >= 62) ? 63 - radius : y_centre + (velocity/2);
+                    end
+                    velocity <= (velocity < 1) ? 0 : ((velocity * friction) / 10);
+                end else begin
+                    moving_status <= 0;
+                    power <= 0;
+                end
+            end
+        end
+    end
+
+    // aiming oled data loop 
+    always @ (posedge clk_25M) begin
+        if (turn) begin
+            if (change_counter_aim == 2500000) begin // Increase this value to slow it down
+                if (btnU) begin
+                    if (direction == 15)
+                        direction <= 0;
+                    else 
+                        direction <= direction + 1;
+                end else if (btnD) begin
+                    if (direction == 0) 
+                        direction <= 15;
+                    else 
+                        direction <= direction - 1;
+                end
+                change_counter_aim <= 0; 
+            end else begin
+                change_counter_aim <= change_counter_aim + 1; 
+            end
+        end
+        
+        
+        
+        if (!moving_status && turn) begin  
+            if (((x - x_centre) * (x - x_centre) + (y - y_centre) * (y - y_centre)) <= 37 && ((x - x_centre) * (x - x_centre) + (y - y_centre) * (y - y_centre)) >= 26)
+                oled_data <= 16'b0000000000000000; // black border
+            else if (((x - x_centre) * (x - x_centre) + (y - y_centre) * (y - y_centre)) < 26)
+                    oled_data <= country_flag; // country  
+            else if (direction == 0) begin 
+                if ((x == x_centre + radius + 2 && y >= y_centre -  1 && y <= y_centre +  1) || (x == x_centre + radius + 3 && y == y_centre))
+                    oled_data <= arrow_colour; // East
+                else
+                    oled_data <= 16'b0000000000000000; // background
+            end else if (direction == 1) begin
+                if ((x == x_centre + radius + 2 && y >= y_centre - 4 && y <= y_centre - 3) || (x == x_centre + radius + 1 && y == y_centre - 4)) 
+                    oled_data <= arrow_colour; // ENE
+                else 
+                    oled_data <= 16'b0000000000000000; // background
+            end else if (direction == 2) begin
+                if ((y == y_centre - 6 && x >= x_centre + 5 && x <= x_centre + 6) || (y == y_centre - 5 && x == x_centre + 6))
+                    oled_data <= arrow_colour; // North East
+                else
+                    oled_data <= 16'b0000000000000000; // background
+            end else if (direction == 3) begin
+                if((y == y_centre - radius - 2 && x <= x_centre + 4 && x >= x_centre + 3) || (y == y_centre - radius - 1 && x == x_centre + 4))
+                    oled_data <= arrow_colour; // NNE
+                else
+                    oled_data <= 16'b0000000000000000; // background
+            end else if (direction == 4) begin
+                if ((y == y_centre - radius - 2 && x >= x_centre -  1 && x <= x_centre +  1) || (y == y_centre - radius - 3 && x == x_centre)) 
+                    oled_data <= arrow_colour; // North
+                else
+                    oled_data <= 16'b0000000000000000; // background
+            end else if (direction == 5) begin
+                if((y == y_centre - radius - 2 && x >= x_centre - 4 && x <= x_centre - 3) || (y == y_centre - radius - 1 && x == x_centre - 4))
+                    oled_data <= arrow_colour; // NNW
+                else
+                    oled_data <= 16'b0000000000000000; // background
+            end else if (direction == 6) begin
+                if ((y == y_centre - 6 && x <= x_centre - 5 && x >= x_centre - 6) || (y == y_centre - 5 && x == x_centre - 6))
+                    oled_data <= arrow_colour; // North West
+                else
+                    oled_data <= 16'b0000000000000000; // background
+            end else if (direction == 7) begin
+                if((x == x_centre - radius - 2 && y >= y_centre - 4 && y <= y_centre - 3) || (x == x_centre - radius - 1 && y == y_centre - 4)) 
+                    oled_data <= arrow_colour; // WNW
+                else
+                    oled_data <= 16'b0000000000000000; // background
+            end else if (direction == 8) begin
+                if ((x == x_centre - radius - 2 && y >= y_centre -  1 && y <= y_centre +  1) || (x == x_centre - radius - 3 && y == y_centre))
+                    oled_data <= arrow_colour; // West
+                else
+                    oled_data <= 16'b0000000000000000; // background
+            end else if (direction == 9) begin
+                if((x == x_centre - radius - 2 && y <= y_centre + 4 && y >= y_centre + 3) || (x == x_centre - radius - 1 && y == y_centre + 4)) 
+                    oled_data <= arrow_colour; // WSW
+                else 
+                    oled_data <= 16'b0000000000000000; // background
+            end else if (direction == 10) begin
+                if ((y == y_centre + 6 && x <= x_centre - 5 && x >= x_centre - 6) || (y == y_centre + 5 && x == x_centre - 6)) 
+                    oled_data <= arrow_colour; // South West
+                else
+                    oled_data <= 16'b0000000000000000; // background
+            end else if (direction == 11) begin
+                if((y == y_centre + radius + 2 && x >= x_centre - 4 && x <= x_centre - 3) || (y == y_centre + radius + 1 && x == x_centre - 4)) 
+                    oled_data <= arrow_colour; // SSW
+                else
+                    oled_data <= 16'b0000000000000000; // background
+            end else if (direction == 12) begin
+                if ((y == y_centre + radius + 2 && x >= x_centre -  1 && x <= x_centre +  1) || (y == y_centre + radius + 3 && x == x_centre)) 
+                    oled_data <= arrow_colour; // South
+                else
+                    oled_data <= 16'b0000000000000000; // background
+            end else if (direction == 13) begin
+                if((y == y_centre + radius + 2 && x <= x_centre + 4 && x >= x_centre + 3) || (y == y_centre + radius + 1 && x == x_centre + 4))
+                    oled_data <= arrow_colour; // SSE
+                else
+                    oled_data <= 16'b0000000000000000; // background
+            end else if (direction == 14) begin
+                if ((y == y_centre + 6 && x >= x_centre + 5 && x <= x_centre + 6) || (y == y_centre + 5 && x == x_centre + 6))
+                    oled_data <= arrow_colour; // South East
+                else
+                    oled_data <= 16'b0000000000000000; // background
+            end else if (direction == 15) begin
+                if((x == x_centre + radius + 2 && y <= y_centre + 4 && y >= y_centre + 3) || (x == x_centre + radius + 1 && y == y_centre + 4))
+                    oled_data <= arrow_colour; // ESE
+                else 
+                    oled_data <= 16'b0000000000000000; // background
+            end else
+                oled_data <= 16'b0000000000000000; // background
+        end else begin
+            if (((x - x_centre) * (x - x_centre) + (y - y_centre) * (y - y_centre)) <= 37 && ((x - x_centre) * (x - x_centre) + (y - y_centre) * (y - y_centre)) >= 26)
+                oled_data <= 16'b0000000000000000; // black border
+            else if (((x - x_centre) * (x - x_centre) + (y - y_centre) * (y - y_centre)) < 26)
+                oled_data <= country_flag; // country
+            else
+                oled_data <= 16'b0000000000000000; // background
+        end
+    end
+endmodule
