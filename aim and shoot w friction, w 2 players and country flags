@@ -10,13 +10,14 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD, output [7:0
     reg turn_P1 = 1,turn_P2 = 0;
     wire [4:0] P1_selected = 1; // use seans code to manipulate this part
     wire [4:0] P2_selected = 4;
+    wire [7:0] P1_x_output, P1_y_output, P2_x_output, P2_y_output;
     
     flexible_clock unit6p25Mhz (basys_clock, 7, clk_6p25);
     flexible_clock unit25Mhz (basys_clock, 1, clk_25M);
     flexible_clock unit20hz (basys_clock, 2499999, clk_20);
     
-    aiming unit_P1(20, 32, 6, turn_P1, pixel_index, 16'b1111100000000000, P1_selected, basys_clock, btnU, btnD, btnC, direction_P1, led_P1, power_P1, oled_data_P1);
-    aiming unit_P2(75, 32, 6, turn_P2, pixel_index, 16'b0000000000011111, P2_selected, basys_clock, btnU, btnD, btnC, direction_P2, led_P2, power_P2, oled_data_P2);
+    aiming unit_P1(20, 32, 6, turn_P1, pixel_index, 16'b1111100000000000, P1_selected, basys_clock, btnU, btnD, btnC, direction_P1, led_P1, power_P1, oled_data_P1, P1_x_output, P1_y_output);
+    aiming unit_P2(75, 32, 6, turn_P2, pixel_index, 16'b0000000000011111, P2_selected, basys_clock, btnU, btnD, btnC, direction_P2, led_P2, power_P2, oled_data_P2, P2_x_output, P2_y_output);
     
     wire btnC_debounced;
     debounce unit_btnC_d (basys_clock, btnC, btnC_debounced);
@@ -85,10 +86,9 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD, output [7:0
 endmodule
 
 
-
-module aiming(input [7:0] x_input, y_input, r_input, input turn, input [12:0] pixel_index, input [15:0] arrow_colour, input [4:0] player_selected, input basys_clock, btnU, btnD, btnC, output reg [4:0] direction = 0, output reg [15:0] led, output reg [4:0] power, output reg [15:0] oled_data);
+module aiming(input [7:0] x_input, y_input, r_input, input turn, input [12:0] pixel_index, input [15:0] arrow_colour, input [4:0] player_selected, input basys_clock, btnU, btnD, btnC, output reg [4:0] direction = 0, output reg [15:0] led, output reg [4:0] power, output reg [15:0] oled_data, output [7:0] x, y);
     wire clk_25M, clk_20;
-    wire [7:0] x, y;
+    //wire [7:0] x, y;
     reg [7:0] radius, x_centre, y_centre;
     reg [31:0] change_counter_aim, change_counter_move; // Counter to slow down the updates
     reg moving_status = 0;
