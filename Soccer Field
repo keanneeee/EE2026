@@ -9,31 +9,36 @@ module soccer_field(input basys_clock, input reset, input [12:0] pixel_index,
     
     //circle formula
     wire [12:0] circle_formula;
-    assign circle_formula = (x - 48)*(x - 48) + (y - 27)*(y - 27); // Circle formula
+    assign circle_formula = (x - 48)*(x - 48) + (y - 32)*(y - 32);
+    wire [12:0] circle_formula_semi_left;
+    assign circle_formula_semi_left = (x - 9)*(x - 9) + (y - 32)*(y - 32);
+    wire [12:0] circle_formula_semi_right;
+    assign circle_formula_semi_right = (x - 86)*(x - 86) + (y - 32)*(y - 32);
     
     always @ (posedge basys_clock)begin
+        
         if (reset) oled_data <= 16'b00000_000000_00000;
         else begin 
 
             //field border lines
             if ((x == 0 || x == 95) && (y >= 0 && y <= 63) || 
-                (y == 0 || y == 53) && (x >= 0 && x <= 95))
+                (y == 0 || y == 63) && (x >= 0 && x <= 95))
                     oled_data <= 16'b11111_111111_11111; 
             else if ((y == 63) && (x >= 0 && x <= 95))
                 oled_data <= 16'b11111_111111_11111; 
 
             //goal post line small
-            else if (((x == 0 || x == 5) && (y >= 17 && y <= 36)) || // Vertical goal posts (left)
-                         ((y == 17 || y == 36) && (x >= 0 && x <= 5)) || // Horizontal goal posts (left)
-                         ((x == 90 || x == 95) && (y >= 17 && y <= 36)) || // Vertical goal posts (right)
-                         ((y == 17 || y == 36) && (x >= 90 && x <= 95)))   // Horizontal goal posts (right)
+            else if (((x == 0 || x == 5) && (y >= 20 && y <= 44)) || //left vertical
+                         ((y == 20 || y == 44) && (x >= 0 && x <= 5)) || //left horizontal
+                         ((x == 90 || x == 95) && (y >= 20 && y <= 44)) || //right vertical
+                         ((y == 20 || y == 44) && (x >= 90 && x <= 95))) //right horizontal
                     oled_data <= 16'b11111_111111_11111; 
-                    
+            
             //goal post line big
-            else if (((x == 0 || x == 15) && (y >= 7 && y <= 46)) || // Vertical goal posts (left)
-                        ((y == 7 || y == 46) && (x >= 0 && x <= 15)) || // Horizontal goal posts (left)
-                        ((x == 80 || x == 95) && (y >= 7 && y <= 46)) || // Vertical goal posts (right)
-                        ((y == 7 || y == 46) && (x >= 80 && x <= 95)))   // Horizontal goal posts (right)
+            else if (((x == 0 || x == 15) && (y >= 10 && y <= 54)) || //left vertical
+                        ((y == 10 || y == 54) && (x >= 0 && x <= 15)) || //left horizontal
+                        ((x == 80 || x == 95) && (y >= 10 && y <= 54)) || //right vertical
+                        ((y == 10 || y == 54) && (x >= 80 && x <= 95))) //right horizontal
                     oled_data <= 16'b11111_111111_11111; 
             
             //center line
@@ -41,49 +46,28 @@ module soccer_field(input basys_clock, input reset, input [12:0] pixel_index,
                 oled_data <= 16'b11111_111111_11111;
                 
             //center circle
-            else if (circle_formula <= 169 && circle_formula >= 144)
+            else if (circle_formula <= 196 && circle_formula >= 169)
                 oled_data <= 16'b11111_111111_11111;
             
-            //score counter
-            else if ((x >= 36 && x <= 47) && (y >= 53 && y <= 64)) //left red
-                oled_data <= 16'b11111_000000_00000;
-            else if ((x >= 49 && x <= 59) && (y >= 53 && y <= 64)) //right blue
-                oled_data <= 16'b00000_000000_11111;
+            //semi circles
+            else if ((circle_formula_semi_left <= 196 && circle_formula_semi_left >= 169) && (x >= 15)) //left semi circle
+                oled_data <= 16'b11111_111111_11111;
+            else if ((circle_formula_semi_right <= 196 && circle_formula_semi_right >= 169) && (x <= 80)) //right semi circle
+                    oled_data <= 16'b11111_111111_11111;
             
-            //left power bar colour: red            
-            else if ((x >= 0 && x <= 35) && (y >= 53 && y <= 64)) begin
-                oled_data <= 16'b11111_011111_00111;
-            //left power bar at bottom dividers
-                if (((x == 5) && (y >= 53 && y <= 64)) ||
-                        ((x == 10) && (y >= 53 && y <= 64)) ||
-                        ((x == 15) && (y >= 53 && y <= 64)) ||
-                        ((x == 20) && (y >= 53 && y <= 64)) ||
-                        ((x == 25) && (y >= 53 && y <= 64)) ||
-                        ((x == 30) && (y >= 53 && y <= 64)) ||
-                        ((x == 35) && (y >= 53 && y <= 64))) begin
-                        oled_data <= 16'b11111_111111_11111;
-                end
-            end
-            
-            //right power bar colour: blue            
-            else if ((x >= 60 && x <= 95) && (y >= 53 && y <= 64)) begin
-                oled_data <= 16'b00000_101111_11111;
-            //right power bar at bottom dividers
-                if (((x == 60) && (y >= 53 && y <= 64)) ||
-                        ((x == 65) && (y >= 53 && y <= 64)) ||
-                        ((x == 70) && (y >= 53 && y <= 64)) ||
-                        ((x == 75) && (y >= 53 && y <= 64)) ||
-                        ((x == 80) && (y >= 53 && y <= 64)) ||
-                        ((x == 85) && (y >= 53 && y <= 64)) ||
-                        ((x == 90) && (y >= 53 && y <= 64))) begin
-                        oled_data <= 16'b11111_111111_11111;
-                end
-            end
-            
+            //soccer field green
             else
-                oled_data <= 16'b00000_111111_00000; // Green color in RGB565
+                oled_data <= 16'b00000_111111_00000; 
+//                16'b01111_111111_01111; //lighter green colour
         
         end
+        
+        //test for player on top of soccer field(outside the whole soccer field code block)
+//        if (circle_formula <= 49) begin
+//            oled_data <= 16'b11111_011111_00111;
+//        end
+        
+        
     end //always @ end
     
 endmodule
