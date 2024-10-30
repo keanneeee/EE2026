@@ -1,0 +1,483 @@
+module score_display(input basys_clock, input reset, input [5:0] sw,
+    output reg p1_win = 0, output reg p2_win = 0, output reg showdown = 0, output reg [7:0] seg, output reg [3:0] an);
+    
+    //player 1&2 sw inputs testing
+    //player 1 score: 000001,000010,000100
+    //player 2 score: 001000,010000,100000
+    
+    reg [3:0] current_digit;
+    reg [1:0] anode_selector = 0;
+    reg [31:0] refresh_counter = 0;
+
+    //digits -----------------------------------------------------------------------------------------------------------------------------
+    always @(*) begin
+        case (current_digit)
+            4'd0: seg = 8'b11000000; //0
+            4'd1: seg = 8'b11111001; //1
+            4'd2: seg = 8'b10100100; //2
+            4'd3: seg = 8'b10110000; //3
+            default: seg = 8'b11111111;
+        endcase
+    end
+
+    //refresh rate -----------------------------------------------------------------------------------------------------------------------
+    always @(posedge basys_clock or posedge reset)begin
+        if (reset) begin
+            refresh_counter <= 0;
+            anode_selector <= 0;
+        end 
+        else begin
+            refresh_counter <= refresh_counter + 1;
+            if (refresh_counter == 31'd99999)begin // Adjust for display speed
+                refresh_counter <= 0;
+                anode_selector <= anode_selector + 1;
+            end
+        end
+    end
+
+    //an selector display --------------------------------------------------------------------------------------------------------------
+    always @(*)begin
+    //SCORES: 0-1, 0-2, 0-3, 1-0, 2-0, 3-0 ---------------------------------------------------------------------------------
+    if (reset == 0 && sw == 6'b000000)begin //p1: 0, p2: 0, 0-0
+        p1_win <= 0;
+        p2_win <= 0;
+        showdown <= 0;
+        case (anode_selector)
+            2'd0: begin
+                an = 4'b1110; //an0
+                current_digit = 4'd0;
+            end
+            2'd1: begin
+                an = 4'b1101; //an1
+                current_digit = 4'd0;
+            end
+            2'd2: begin
+                an = 4'b1011; //an2
+                current_digit = 4'd0;
+            end
+            2'd3: begin
+                an = 4'b0111; //an3
+                current_digit = 4'd0;
+            end
+            default: begin
+                an = 4'b1111;
+                current_digit = 4'd0;
+            end
+        endcase
+    end
+    
+    if (sw == 6'b001000)begin //p1: 1, p2: 0, 1-0
+        case (anode_selector)
+            2'd0: begin
+                an = 4'b1110; //an0
+                current_digit = 4'd0;
+            end
+            2'd1: begin
+                an = 4'b1101; //an1
+                current_digit = 4'd0;
+            end
+            2'd2: begin
+                an = 4'b1011; //an2
+                current_digit = 4'd1;
+            end
+            2'd3: begin
+                an = 4'b0111; //an3
+                current_digit = 4'd0;
+            end
+            default: begin
+                an = 4'b1111;
+                current_digit = 4'd0;
+            end
+        endcase
+    end
+    
+    if (sw == 6'b010000)begin //p1: 2, p2: 0, 2-0
+        case (anode_selector)
+            2'd0: begin
+                an = 4'b1110; //an0
+                current_digit = 4'd0;
+            end
+            2'd1: begin
+                an = 4'b1101; //an1
+                current_digit = 4'd0;
+            end
+            2'd2: begin
+                an = 4'b1011; //an2
+                current_digit = 4'd2;
+            end
+            2'd3: begin
+                an = 4'b0111; //an3
+                current_digit = 4'd0;
+            end
+            default: begin
+                an = 4'b1111;
+                current_digit = 4'd0;
+            end
+        endcase
+    end
+    
+    if (sw == 6'b100000)begin //p1: 3, p2: 0, 3-0
+        p1_win <= 1; //send out p1 wins
+        case (anode_selector)
+            2'd0: begin
+                an = 4'b1110; //an0
+                current_digit = 4'd0;
+            end
+            2'd1: begin
+                an = 4'b1101; //an1
+                current_digit = 4'd0;
+            end
+            2'd2: begin
+                an = 4'b1011; //an2
+                current_digit = 4'd3;
+            end
+            2'd3: begin
+                an = 4'b0111; //an3
+                current_digit = 4'd0;
+            end
+            default: begin
+                an = 4'b1111;
+                current_digit = 4'd0;
+            end
+        endcase
+    end
+    
+    if (sw == 6'b000001)begin //p1: 0, p2: 1, 0-1
+        case (anode_selector)
+            2'd0: begin
+                an = 4'b1110; //an0
+                current_digit = 4'd1;
+            end
+            2'd1: begin
+                an = 4'b1101; //an1
+                current_digit = 4'd0;
+            end
+            2'd2: begin
+                an = 4'b1011; //an2
+                current_digit = 4'd0;
+            end
+            2'd3: begin
+                an = 4'b0111; //an3
+                current_digit = 4'd0;
+            end
+            default: begin
+                an = 4'b1111;
+                current_digit = 4'd0;
+            end
+        endcase
+    end
+    
+    if (sw == 6'b000010)begin //p1: 0, p2: 2, 0-2
+        case (anode_selector)
+            2'd0: begin
+                an = 4'b1110; //an0
+                current_digit = 4'd2;
+            end
+            2'd1: begin
+                an = 4'b1101; //an1
+                current_digit = 4'd0;
+            end
+            2'd2: begin
+                an = 4'b1011; //an2
+                current_digit = 4'd0;
+            end
+            2'd3: begin
+                an = 4'b0111; //an3
+                current_digit = 4'd0;
+            end
+            default: begin
+                an = 4'b1111;
+                current_digit = 4'd0;
+            end
+        endcase
+    end
+    
+    if (sw == 6'b000100)begin //p1: 0, p2: 3, 0-3
+        p2_win <= 1; //send out p2 wins
+        case (anode_selector)
+            2'd0: begin
+                an = 4'b1110; //an0
+                current_digit = 4'd3;
+            end
+            2'd1: begin
+                an = 4'b1101; //an1
+                current_digit = 4'd0;
+            end
+            2'd2: begin
+                an = 4'b1011; //an2
+                current_digit = 4'd0;
+            end
+            2'd3: begin
+                an = 4'b0111; //an3
+                current_digit = 4'd0;
+            end
+            default: begin
+                an = 4'b1111;
+                current_digit = 4'd0;
+            end
+        endcase
+    end
+    
+    //SCORES: 1-1, 2-2 -------------------------------------------------------------------------------------------------------------
+    if (sw == 6'b001001)begin //p1: 1, p2: 1, 1-1
+        case (anode_selector)
+            2'd0: begin
+                an = 4'b1110; //an0
+                current_digit = 4'd1;
+            end
+            2'd1: begin
+                an = 4'b1101; //an1
+                current_digit = 4'd0;
+            end
+            2'd2: begin
+                an = 4'b1011; //an2
+                current_digit = 4'd1;
+            end
+            2'd3: begin
+                an = 4'b0111; //an3
+                current_digit = 4'd0;
+            end
+            default: begin
+                an = 4'b1111;
+                current_digit = 4'd0;
+            end
+        endcase
+    end
+    
+    if (sw == 6'b010010)begin //p1: 2, p2: 2, 2-2
+        showdown <= 1; //sends out showdown, 1 more point to win
+        case (anode_selector)
+            2'd0: begin
+                an = 4'b1110; //an0
+                current_digit = 4'd2;
+            end
+            2'd1: begin
+                an = 4'b1101; //an1
+                current_digit = 4'd0;
+            end
+            2'd2: begin
+                an = 4'b1011; //an2
+                current_digit = 4'd2;
+            end
+            2'd3: begin
+                an = 4'b0111; //an3
+                current_digit = 4'd0;
+            end
+            default: begin
+                an = 4'b1111;
+                current_digit = 4'd0;
+            end
+        endcase
+    end
+    
+    //SCORES: 1-2, 1-3, 2-1, 3-1 -------------------------------------------------------------------------------------------------------------
+    if (sw == 6'b001010)begin //p1: 1, p2: 2, 1-2
+        case (anode_selector)
+            2'd0: begin
+                an = 4'b1110; //an0
+                current_digit = 4'd2;
+            end
+            2'd1: begin
+                an = 4'b1101; //an1
+                current_digit = 4'd0;
+            end
+            2'd2: begin
+                an = 4'b1011; //an2
+                current_digit = 4'd1;
+            end
+            2'd3: begin
+                an = 4'b0111; //an3
+                current_digit = 4'd0;
+            end
+            default: begin
+                an = 4'b1111;
+                current_digit = 4'd0;
+            end
+        endcase
+    end
+    
+    if (sw == 6'b001100)begin //p1: 1, p2: 3, 1-3
+        p2_win <= 1; //sends out p2 wins
+        case (anode_selector)
+            2'd0: begin
+                an = 4'b1110; //an0
+                current_digit = 4'd3;
+            end
+            2'd1: begin
+                an = 4'b1101; //an1
+                current_digit = 4'd0;
+            end
+            2'd2: begin
+                an = 4'b1011; //an2
+                current_digit = 4'd1;
+            end
+            2'd3: begin
+                an = 4'b0111; //an3
+                current_digit = 4'd0;
+            end
+            default: begin
+                an = 4'b1111;
+                current_digit = 4'd0;
+            end
+        endcase
+    end
+    
+    if (sw == 6'b010001)begin //p1: 2, p2: 1, 2-1
+        case (anode_selector)
+            2'd0: begin
+                an = 4'b1110; //an0
+                current_digit = 4'd1;
+            end
+            2'd1: begin
+                an = 4'b1101; //an1
+                current_digit = 4'd0;
+            end
+            2'd2: begin
+                an = 4'b1011; //an2
+                current_digit = 4'd2;
+            end
+            2'd3: begin
+                an = 4'b0111; //an3
+                current_digit = 4'd0;
+            end
+            default: begin
+                an = 4'b1111;
+                current_digit = 4'd0;
+            end
+        endcase
+    end
+    
+    if (sw == 6'b100001)begin //p1: 3, p2: 1, 3-1
+        p1_win <= 1; //sends out p1 wins
+        case (anode_selector)
+            2'd0: begin
+                an = 4'b1110; //an0
+                current_digit = 4'd1;
+            end
+            2'd1: begin
+                an = 4'b1101; //an1
+                current_digit = 4'd0;
+            end
+            2'd2: begin
+                an = 4'b1011; //an2
+                current_digit = 4'd3;
+            end
+            2'd3: begin
+                an = 4'b0111; //an3
+                current_digit = 4'd0;
+            end
+            default: begin
+                an = 4'b1111;
+                current_digit = 4'd0;
+            end
+        endcase
+    end
+    
+    //SCORES: 2-1, 2-3, 1-2, 3-2 -------------------------------------------------------------------------------------------------------------
+    
+    if (sw == 6'b010001)begin //p1: 2, p2: 1, 2-1
+        case (anode_selector)
+            2'd0: begin
+                an = 4'b1110; //an0
+                current_digit = 4'd1;
+            end
+            2'd1: begin
+                an = 4'b1101; //an1
+                current_digit = 4'd0;
+            end
+            2'd2: begin
+                an = 4'b1011; //an2
+                current_digit = 4'd2;
+            end
+            2'd3: begin
+                an = 4'b0111; //an3
+                current_digit = 4'd0;
+            end
+            default: begin
+                an = 4'b1111;
+                current_digit = 4'd0;
+            end
+        endcase
+    end
+    
+    if (sw == 6'b010100)begin //p1: 2, p2: 3, 2-3
+        p2_win <= 1; //sends out p2 wins
+        showdown <= 0; //reset showdown
+        case (anode_selector)
+            2'd0: begin
+                an = 4'b1110; //an0
+                current_digit = 4'd3;
+            end
+            2'd1: begin
+                an = 4'b1101; //an1
+                current_digit = 4'd0;
+            end
+            2'd2: begin
+                an = 4'b1011; //an2
+                current_digit = 4'd2;
+            end
+            2'd3: begin
+                an = 4'b0111; //an3
+                current_digit = 4'd0;
+            end
+            default: begin
+                an = 4'b1111;
+                current_digit = 4'd0;
+            end
+        endcase
+    end
+    
+    if (sw == 6'b001010)begin //p1: 1, p2: 2, 1-2
+        case (anode_selector)
+            2'd0: begin
+                an = 4'b1110; //an0
+                current_digit = 4'd2;
+            end
+            2'd1: begin
+                an = 4'b1101; //an1
+                current_digit = 4'd0;
+            end
+            2'd2: begin
+                an = 4'b1011; //an2
+                current_digit = 4'd1;
+            end
+            2'd3: begin
+                an = 4'b0111; //an3
+                current_digit = 4'd0;
+            end
+            default: begin
+                an = 4'b1111;
+                current_digit = 4'd0;
+            end
+        endcase
+    end
+    
+    if (sw == 6'b100010)begin //p1: 3, p2: 2, 3-2
+        p1_win <= 1; //sends out p1 wins
+        showdown <= 0; //reset showdown
+        case (anode_selector)
+            2'd0: begin
+                an = 4'b1110; //an0
+                current_digit = 4'd2;
+            end
+            2'd1: begin
+                an = 4'b1101; //an1
+                current_digit = 4'd0;
+            end
+            2'd2: begin
+                an = 4'b1011; //an2
+                current_digit = 4'd3;
+            end
+            2'd3: begin
+                an = 4'b0111; //an3
+                current_digit = 4'd0;
+            end
+            default: begin
+                an = 4'b1111;
+                current_digit = 4'd0;
+            end
+        endcase
+    end
+    
+    end
+endmodule
