@@ -1,0 +1,175 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 16.10.2024 00:04:02
+// Design Name: 
+// Module Name: character_select
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module character_select(input basys_clock, btnC, btnU, btnR, btnL, btnD, input [15:0] sw, 
+                        output reg [15:0] led, output [7:0] JB);
+    wire frame_begin, sending_pixels, sample_pixel;
+    wire [12:0] pixel_index;
+    wire clk_6p25, clk_25M;
+    reg [15:0] oled_data;
+    
+    flexible_clock unit6p25Mhz (basys_clock, 7, clk_6p25);
+    flexible_clock unit25Mhz (basys_clock, 1, clk_25M);
+    
+    Oled_Display characters (.clk(clk_6p25), .reset(0), .frame_begin(frame_begin),
+    .sending_pixels(sending_pixels), .sample_pixel(sample_pixel), .pixel_index(pixel_index),
+    .pixel_data(oled_data), .cs(JB[0]), .sdin(JB[1]), .sclk(JB[3]), .d_cn(JB[4]), .resn(JB[5]),
+    .vccen(JB[6]), .pmoden(JB[7]));
+    
+    wire [6:0] x;
+    wire [5:0] y;
+    assign x = pixel_index % 96;
+    assign y = pixel_index / 96;                    
+    wire [13:0] circle_1, circle_2, circle_3, circle_4, circle_5;
+    wire [13:0] ring_1, ring_2, ring_3, ring_4, ring_5; 
+    assign circle_1 = (x - 25)*(x - 25) + (y - 40)*(y - 40); // (x^2) + (y^2)  
+    assign circle_2 = (x - 50)*(x - 50) + (y - 40)*(y - 40); // (x^2) + (y^2)                       
+    assign circle_3 = (x - 75)*(x - 75) + (y - 40)*(y - 40); // (x^2) + (y^2) 
+    assign circle_4 = (x - 37)*(x - 37) + (y - 55)*(y - 55); // (x^2) + (y^2)  
+    assign circle_5 = (x - 62)*(x - 62) + (y - 55)*(y - 55); // (x^2) + (y^2)
+    
+    always @ (posedge clk_25M)
+    begin
+        led <= 16'b0;
+        led[15:11] <= sw[15:11];
+        led[4:0] <= sw[4:0];
+        
+        if (circle_1 >= 27 && circle_1 <= 36)
+            oled_data <= 16'b11111_111111_11111; // white
+        else if (circle_1 <= 26)
+            begin
+            if (x < 23)
+                oled_data <= 16'b00000_001001_01010; // blue
+            else if (x > 27)
+                oled_data <= 16'b11101_001010_00111; // red
+            else
+                oled_data <= 16'b11111_111111_11111; // white
+            end
+            
+        else if (circle_2 >= 27 && circle_2 <= 36) 
+            oled_data <= 16'b11111_111111_11111; // white
+        else if (circle_2 <= 26)
+            oled_data <= 16'b11111_111111_00000; //yellow
+            
+        else if (circle_3 >= 27 && circle_3 <= 36)
+            oled_data <= 16'b11111_111111_11111; // white            
+        else if (circle_3 <= 26)
+            oled_data <= 16'b01110_000110_01000; //magenta
+            
+        else if (circle_4 >= 27 && circle_4 <= 36)
+            oled_data <= 16'b11111_111111_11111; // white            
+        else if (circle_4 <= 26)
+            oled_data <= 16'b11100_011001_01100; //light pinkish 
+            
+        else if (circle_5 >= 27 && circle_5 <= 36)
+            oled_data <= 16'b11111_111111_11111; // white            
+        else if (circle_5 <= 26)
+            oled_data <= 16'b11111_101001_00000; //orange
+
+
+        else if (circle_1 >= 37 && circle_1 <= 50) // if switch is on, then can choose player
+            begin
+            oled_data <= 16'b11111_111111_11111;
+            if (sw[4:0] == 5'b00001 && sw[15:11] != 5'b00001)
+                oled_data <= 16'b11111_000000_00000; // red 
+            else if (sw[4:0] != 5'b00001 && sw[15:11] == 5'b00001) 
+                oled_data <= 16'b00000_000000_11111; // blue 
+            else if (sw[4:0] == 5'b00001 && sw[15:11] == 5'b00001)
+                oled_data <= 16'b11111_111111_11111; // white            
+            end               
+        else if (circle_2 >= 37 && circle_2 <= 50) // if switch is on, then can choose player
+            begin
+            oled_data <= 16'b11111_111111_11111;
+            if (sw[4:0] == 5'b00010 && sw[15:11] != 5'b00010) 
+                oled_data <= 16'b11111_000000_00000; // red 
+            else if (sw[4:0] != 5'b00010 && sw[15:11] == 5'b00010)
+                oled_data <= 16'b00000_000000_11111; // blue 
+            else if (sw[4:0] == 5'b00010 && sw[15:11] == 5'b00010)
+                oled_data <= 16'b11111_111111_11111; // white
+            end
+        else if (circle_3 >= 37 && circle_3 <= 50) // if switch is on, then can choose player
+            begin
+            oled_data <= 16'b11111_111111_11111;
+            if (sw[4:0] == 5'b00100 && sw[15:11] != 5'b00100) 
+                oled_data <= 16'b11111_000000_00000; // red 
+            else if (sw[4:0] != 5'b00100 && sw[15:11] == 5'b00100)
+                oled_data <= 16'b00000_000000_11111; // blue 
+            else if (sw[4:0] == 5'b00100 && sw[15:11] == 5'b00100)
+                oled_data <= 16'b11111_111111_11111; // white
+            end                
+        else if (circle_4 >= 37 && circle_4 <= 50) // if switch is on, then can choose player
+            begin
+            oled_data <= 16'b11111_111111_11111;
+            if (sw[4:0] == 5'b01000 && sw[15:11] != 5'b01000) 
+                oled_data <= 16'b11111_000000_00000; // red 
+            else if (sw[4:0] != 5'b01000 && sw[15:11] == 5'b01000) 
+                oled_data <= 16'b00000_000000_11111; // blue 
+            else if (sw[4:0] == 5'b01000 && sw[15:11] == 5'b01000)
+                oled_data <= 16'b11111_111111_11111; // white                
+            end         
+        else if (circle_5 >= 37 && circle_5 <= 50) // if switch is on, then can choose player
+            begin
+            oled_data <= 16'b11111_111111_11111;
+            if (sw[4:0] == 5'b10000 && sw[15:11] != 5'b10000) 
+                oled_data <= 16'b11111_000000_00000; // red 
+            else if (sw[4:0] != 5'b10000 && sw[15:11] == 5'b10000) 
+                oled_data <= 16'b00000_000000_11111; // blue 
+            else if (sw[4:0] == 5'b10000 && sw[15:11] == 5'b10000)
+                oled_data <= 16'b11111_111111_11111; // white
+            end                
+              
+//        else if (x == 20 && y >= 6 && y <= 24) // line P left
+//            oled_data <= 16'b11111_111111_11111; //white                     
+//        else if (x >= 20 && x <= 29 && y == 6) // line P top
+//            oled_data <= 16'b11111_111111_11111; //white                 
+//        else if (x >= 20 && x <= 29 && y == 14) // line P middle
+//            oled_data <= 16'b11111_111111_11111; //white              
+//        else if (x == 29 && y >= 6 && y <= 14) // line P right
+//            oled_data <= 16'b11111_111111_11111; //white   
+//        else if (x == 35 && y >= 6 && y <= 24) // 1         
+//            oled_data <= 16'b11111_111111_11111; //white  
+            
+//        else if (x == 20 && y >= 40 && y <= 58) // line P left
+//            oled_data <= 16'b11111_111111_11111; //white                     
+//        else if (x >= 20 && x <= 29 && y == 40) // line P top
+//            oled_data <= 16'b11111_111111_11111; //white                 
+//        else if (x >= 20 && x <= 29 && y == 48) // line P middle
+//            oled_data <= 16'b11111_111111_11111; //white              
+//        else if (x == 29 && y >= 40 && y <= 48) // line P right
+//            oled_data <= 16'b11111_111111_11111; //white   
+//        else if (x >= 31 && x <= 40 && y == 40) // 2 top         
+//            oled_data <= 16'b11111_111111_11111; //white             
+//        else if (x >= 31 && x <= 40 && y == 48) // 2 middle         
+//            oled_data <= 16'b11111_111111_11111; //white              
+//        else if (x >= 31 && x <= 40 && y == 58) // 2 bottom         
+//            oled_data <= 16'b11111_111111_11111; //white 
+//        else if (x == 31 && y >= 48 && y <= 58) // 2 left             
+//            oled_data <= 16'b11111_111111_11111; //white  
+//        else if (x == 40 && y >= 40 && y <= 48) // 2 right             
+//                oled_data <= 16'b11111_111111_11111; //white             
+                      
+                                                                                          
+        else        
+            oled_data <= 16'b00000_000000_00000; //black background
+    end
+    
+endmodule
