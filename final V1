@@ -26,9 +26,9 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0]
     
     character_select unit_select (pixel_index, basys_clock, btnC, sw[15:0], led_select, oled_data_select, P1_selected, P2_selected);
     
-    aiming unit_P1(collision_detected_P1, resultant_d_P1, 20, 32, 6, turn_P1, pixel_index, 16'b0000000000000000, P1_selected, basys_clock, btnU, btnD, btnC, direction_P1, led_P1, power_P1, oled_data_P1, P1_x_output, P1_y_output, pixel_memory_P1, after_collison_P1);
-    aiming unit_P2(collision_detected_P2, resultant_d_P2, 75, 32, 6, turn_P2, pixel_index, 16'b0000000000000000, P2_selected, basys_clock, btnU, btnD, btnC, direction_P2, led_P2, power_P2, oled_data_P2, P2_x_output, P2_y_output, pixel_memory_P2, after_collision_P2);
-    aiming unit_ball(collision_detected_ball, resultant_d_ball, 48, 32, 2, 0, pixel_index, 16'b1111111111111111, 5, basys_clock, btnU, btnD, btnC, direction_ball, led_ball, power_ball, oled_data_ball, ball_x_output, ball_y_output, pixel_memory_ball, after_collision_ball);
+    aiming unit_P1(kick_off, collision_detected_P1, resultant_d_P1, 20, 32, 6, turn_P1, pixel_index, 16'b0000000000000000, P1_selected, basys_clock, btnU, btnD, btnC, direction_P1, led_P1, power_P1, oled_data_P1, P1_x_output, P1_y_output, pixel_memory_P1, after_collison_P1);
+    aiming unit_P2(kick_off, collision_detected_P2, resultant_d_P2, 75, 32, 6, turn_P2, pixel_index, 16'b0000000000000000, P2_selected, basys_clock, btnU, btnD, btnC, direction_P2, led_P2, power_P2, oled_data_P2, P2_x_output, P2_y_output, pixel_memory_P2, after_collision_P2);
+    aiming unit_ball(kick_off, collision_detected_ball, resultant_d_ball, 48, 32, 2, 0, pixel_index, 16'b1111111111111111, 5, basys_clock, btnU, btnD, btnC, direction_ball, led_ball, power_ball, oled_data_ball, ball_x_output, ball_y_output, pixel_memory_ball, after_collision_ball);
     
     soccer_field unit_field(basys_clock,reset, pixel_index, oled_data_field);
     
@@ -132,9 +132,7 @@ endmodule
 
 
 
-
-
-module aiming(input collision_detected, input resultant_d, input [7:0] x_input, y_input, r_input, input turn, input [12:0] pixel_index, input [15:0] arrow_colour, input [4:0] player_selected, input basys_clock, btnU, btnD, btnC,
+module aiming(input kick_off, input collision_detected, input resultant_d, input [7:0] x_input, y_input, r_input, input turn, input [12:0] pixel_index, input [15:0] arrow_colour, input [4:0] player_selected, input basys_clock, btnU, btnD, btnC,
 output reg [4:0] direction = 0, output reg [15:0] led, output reg [4:0] power, output reg [15:0] oled_data, output [7:0] x, y, output reg [0:6143] pixel_memory, output after_collison);
     
     wire clk_25M, clk_20;
@@ -227,7 +225,7 @@ output reg [4:0] direction = 0, output reg [15:0] led, output reg [4:0] power, o
             initialized <= 1; 
         end
         
-        if (turn) begin
+        if (turn && kick_off) begin
             if (btnC && !moving_status && power <= 15) begin
                 // will add in item that makes power go to 15
                 power <= power + 1;
