@@ -20,23 +20,10 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module pages(input basys_clock, btnC, btnU, btnR, btnL, btnD, input [15:0] sw, 
-             output [7:0] JB);            
-
-    wire frame_begin, sending_pixels, sample_pixel;
-    wire [12:0] pixel_index;
-    wire clk_6p25, clk_25M;
-    reg [15:0] oled_data;
+module pages(input basys_clock, btnC, btnU, btnR, btnL, btnD, input [12:0] pixel_index,
+             output reg [15:0] oled_data);            
     
-    Oled_Display characters (.clk(clk_6p25), .reset(0), .frame_begin(frame_begin),
-    .sending_pixels(sending_pixels), .sample_pixel(sample_pixel), .pixel_index(pixel_index),
-    .pixel_data(oled_data), .cs(JB[0]), .sdin(JB[1]), .sclk(JB[3]), .d_cn(JB[4]), .resn(JB[5]),
-    .vccen(JB[6]), .pmoden(JB[7]));
-    
-    flexible_clock unit6p25Mhz (basys_clock, 7, clk_6p25);
-    flexible_clock unit25Mhz (basys_clock, 1, clk_25M);
-    
-    reg [3:0] state;
+    reg [3:0] state = 4'b0000;
     
 //    wire [15:0] oled_data_one, oled_data_two, oled_data_three, oled_data_four, oled_data_five, 
 //                oled_data_six, oled_data_seven;
@@ -49,7 +36,7 @@ module pages(input basys_clock, btnC, btnU, btnR, btnL, btnD, input [15:0] sw,
 //    page_six back (basys_clock, pixel_index, oled_data_six);
 //    page_seven congrats (basys_clock, pixel_index, oled_data_seven);
     
-    always @ (posedge clk_25M)
+    always @ (posedge basys_clock)
     begin
     case (state)
         4'b0000: begin // supa strikerz play
@@ -260,7 +247,9 @@ module pages(input basys_clock, btnC, btnU, btnR, btnL, btnD, input [15:0] sw,
             if (btnC)
                 state <= 4'b0000; // supa strikerz play
         end
-        
+        default:begin
+            state <= 4'b0110;
+        end
         endcase
 
     end
