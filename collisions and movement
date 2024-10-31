@@ -1,26 +1,4 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 17.10.2024 10:17:14
-// Design Name: 
-// Module Name: collision_detection
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-
-
-module collision_detection(input basys_clock, input pixel_memory [0:6143], input initial_direction, input x_centre, input y_centre, input powerA, input powerB, input a_centre, input b_centre, output reg resultant_d);
+module collision_detection(input basys_clock, input pixel_memory [0:6143], input initial_direction, input x_centre, input y_centre, input powerA, input powerB, output reg resultant_d);
 reg [2:0] radius = 3'd5;
 wire position1_x;
 wire position1_y;
@@ -334,33 +312,5 @@ else if (initial_direction == 3)
         if(y_centre >= 15)
           resultant_d <= 15;
         end 
-      //notdone
-      
-    
-    
 end
-always @(posedge basys_clock)
-begin
-//player contact with another player
-//if ((position1_x - position2_x <= 5 || position1_x - position2_x <= 5) && (position1_y - position2_y <= 5 || position2_y - position1_y <= 5))
-//begin
-//  collision <= 1;
-//end
-//player contact with border
-if ((position1_x >= 81 || position1_x <= 15 || position1_y >= 49 || position1_y <= 15))
-begin
-  collision <= 1;
-end
-//player2 collide with border
-//else if ((position2_x >= 90 || position2_x <= 6 || position2_y >= 58 || position2_y <= 6))
-//begin
-//  collision <= 3;
-//end
-//player1 collide with ball
-else if ((position2_x - position1_x <= 15 || position2_x - position1_x))
-begin
-  collision <= 2;
-end 
-end
-
 endmodule
