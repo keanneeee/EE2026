@@ -144,7 +144,7 @@ output reg [4:0] direction = 0, output reg [15:0] led, output reg [4:0] power, o
     reg moving_status = 0;
     reg [4:0] move_distance;
     reg [4:0] velocity;
-    parameter friction = 8;
+    parameter friction = 7;
     reg initialized = 0;  // Flag to check if the circle is initialized
     //reg collision_wall = 0;
     reg [15:0] country_flag;
@@ -228,7 +228,7 @@ output reg [4:0] direction = 0, output reg [15:0] led, output reg [4:0] power, o
         end
         
         if (turn) begin
-            if (btnC && !moving_status && power <= 10) begin
+            if (btnC && !moving_status && power <= 15) begin
                 // will add in item that makes power go to 15
                 power <= power + 1;
                 led[power] <= 1;  
