@@ -1,0 +1,234 @@
+module character_select(input [12:0] pixel_index, input basys_clock, btnC, input [15:0] sw, 
+                        output reg [15:0] led, output reg [15:0] oled_data, output reg [4:0] P1_character, output reg [4:0] P2_character);
+    wire clk_4,clk_7,clk_8,count_4,count_7,count_8, clk_6p25, clk_25M;
+    
+    flexible_clock unit6p25Mhz (basys_clock, 7, clk_6p25);
+    flexible_clock unit4hz (basys_clock, 12499999, clk_4);
+    flexible_clock unit7hz (basys_clock, 7142856, clk_7);
+    flexible_clock unit8hz (basys_clock, 6249999, clk_8);
+    flexible_clock unit25Mhz (basys_clock, 1, clk_25M);  
+    
+    wire [7:0] x;
+    wire [7:0] y;
+    assign x = pixel_index % 96;
+    assign y = pixel_index / 96;                    
+    wire [15:0] circle_1, circle_2, circle_3, circle_4, circle_5, circle_6, circle_7, circle_8, circle_9, circle_10;
+    
+    assign circle_6 = (x - 25)*(x - 25) + (y - 30)*(y - 30); // (x^2) + (y^2)  
+    assign circle_7 = (x - 40)*(x - 40) + (y - 40)*(y - 40); // (x^2) + (y^2)                       
+    assign circle_8 = (x - 55)*(x - 55) + (y - 30)*(y - 30); // (x^2) + (y^2) 
+    assign circle_9 = (x - 70)*(x - 70) + (y - 40)*(y - 40); // (x^2) + (y^2)  
+    assign circle_10 = (x - 85)*(x - 85) + (y - 30)*(y - 30); // (x^2) + (y^2)
+    
+    assign circle_1 = (x - 25)*(x - 25) + (y - 10)*(y - 10); // (x^2) + (y^2)  
+    assign circle_2 = (x - 40)*(x - 40) + (y - 20)*(y - 20); // (x^2) + (y^2)                       
+    assign circle_3 = (x - 55)*(x - 55) + (y - 10)*(y - 10); // (x^2) + (y^2) 
+    assign circle_4 = (x - 70)*(x - 70) + (y - 20)*(y - 20); // (x^2) + (y^2)  
+    assign circle_5 = (x - 85)*(x - 85) + (y - 10)*(y - 10); // (x^2) + (y^2)
+    
+    
+    always @ (posedge clk_25M)
+    begin
+
+        led[10:5] <= 6'b000000;
+
+        if (circle_1 <= 37 && circle_1 >= 26)
+            oled_data <= 16'b00000_000000_00000;
+        else if (circle_1 < 26) begin // france
+            if (x < 23)
+                oled_data <= 16'b0000000100111010; // blue #002654
+            else if (x > 27)
+                oled_data <= 16'b1110100101000111; // red #ED2939
+            else
+                oled_data <= 16'b1111111111111111; // white
+            
+        end else if (circle_2 <= 37 && circle_2 >= 26)
+            oled_data <= 16'b00000_000000_00000;
+        else if (circle_2 < 26) begin // brazil
+            if ((x >= 38 && x <= 42 && y >= 19 && y <= 21) || (x >= 39 && x <= 41 && y >= 18 && y <= 22))
+                if ((x == 40 && y == 20) || (x == 40 && y == 19) || (x == 39 && y == 19) || (x == 41 && y == 20) || (x == 42 && y == 20))
+                    oled_data <= 16'b1111111111111111; // white
+                else 
+                    oled_data <= 16'b0000000100001101; // blue #012169
+            else if ((x == 40 && y >= 16 && y <= 24) || 
+                    (x >= 39 && x <= 41 && y >= 17 && y <= 23) ||
+                    (x >= 38 && x <= 42 && y >= 18 && y <= 22) ||
+                    (x >= 37 && x <= 43 && y >= 19 && y <= 21) ||
+                    (y == 20 && x >= 36 && x <= 44))
+                oled_data <= 16'b1111111011100000; // yellow #FEDD00
+            else
+                oled_data <= 16'b00000_100110_00111; // green #009739
+            
+        end else if (circle_3 <= 37 && circle_3 >= 26)
+            oled_data <= 16'b00000_000000_00000;    
+        else if (circle_3 < 26) begin // germany
+            if (y < 8)
+                oled_data <= 16'b0000000000000000; // black
+            else if (y > 12)
+                oled_data <= 16'b1111111001100000; // gold #FFCC00
+            else
+                oled_data <= 16'b1101100000000000; // red #DD0000
+            
+        end else if (circle_4 <= 37 && circle_4 >= 26)
+            oled_data <= 16'b00000_000000_00000;    
+        else if (circle_4 < 26) begin // england
+            if ((x >= 65 && x <= 75 && y >= 19 && y <= 21) ||
+                (x >= 69 && x <= 71 && y >= 15 && y <= 25))
+                oled_data <= 16'b11001_000100_00100; // red #CE1124
+            else
+                oled_data <= 16'b1111111111111111; // white    
+            
+        end else if (circle_5 <= 37 && circle_5 >= 26)
+            oled_data <= 16'b00000_000000_00000;    
+        else if (circle_5 < 26) begin // argentina
+            if (y < 8 || y > 12)
+                oled_data <= 16'b0110110101111100; // blue #6CACE4
+            else if (((x == 87 || x == 83) && y == 10) ||
+                    ((y == 12 || y == 8) && x == 85) ||
+                    ((x == 87 || x == 83) && y == 8) ||
+                    ((x == 87 || x == 83) && y == 12) ||
+                    (x <= 86 && x >= 84 && y <= 11 && y >= 9))
+                oled_data <= 16'b1111110111000011; // yellow #FFB81C
+            else 
+                oled_data <= 16'b1111111111111111; // white
+            
+            
+        end else if (circle_6 <= 37 && circle_6 >= 26)
+            oled_data <= 16'b00000_000000_00000;    
+        else if (circle_6 < 26) begin // france
+            if (x < 23)
+                oled_data <= 16'b0000000100111010; // blue #002654
+            else if (x > 27)
+                oled_data <= 16'b1110100101000111; // red #ED2939
+            else
+                oled_data <= 16'b1111111111111111; // white
+            
+            
+        end else if (circle_7 <= 37 && circle_7 >= 26)
+            oled_data <= 16'b00000_000000_00000;    
+        else if (circle_7 < 26) begin // brazil
+            if ((x >= 38 && x <= 42 && y >= 39 && y <= 41) || (x >= 39 && x <= 41 && y >= 38 && y <= 42))
+                if ((x == 40 && y == 40) || (x == 40 && y == 39) || (x == 39 && y == 39) || (x == 41 && y == 40) || (x == 42 && y == 40))
+                    oled_data <= 16'b1111111111111111; // white
+                else 
+                    oled_data <= 16'b0000000100001101; // blue #012169
+            else if ((x == 40 && y >= 36 && y <= 44) || 
+                    (x >= 39 && x <= 41 && y >= 37 && y <= 43) ||
+                    (x >= 38 && x <= 42 && y >= 38 && y <= 42) ||
+                    (x >= 37 && x <= 43 && y >= 39 && y <= 41) ||
+                    (y == 40 && x >= 36 && x <= 44))
+                oled_data <= 16'b1111111011100000; // yellow #FEDD00
+            else
+                oled_data <= 16'b00000_100110_00111; // green #009739
+            
+        end else if (circle_8 <= 37 && circle_8 >= 26)
+            oled_data <= 16'b00000_000000_00000;    
+        else if (circle_8 < 26) begin // germany
+            if (y < 28)
+                oled_data <= 16'b0000000000000000; // black
+            else if (y > 32)
+                oled_data <= 16'b1111111001100000; // gold #FFCC00
+            else
+                oled_data <= 16'b1101100000000000; // red #DD0000
+            
+            
+        end else if (circle_9 <= 37 && circle_9 >= 26)
+            oled_data <= 16'b00000_000000_00000;    
+        else if (circle_9 < 26) begin // england
+            if ((x >= 65 && x <= 75 && y >= 39 && y <= 41) ||
+                (x >= 69 && x <= 71 && y >= 35 && y <= 45))
+                oled_data <= 16'b11001_000100_00100; // red #CE1124
+            else
+                oled_data <= 16'b1111111111111111; // white    
+            
+            
+        end else if (circle_10 <= 37 && circle_10 >= 26)
+            oled_data <= 16'b00000_000000_00000;    
+        else if (circle_10 < 26) begin // argentina
+            if (y < 28 || y > 32)
+                oled_data <= 16'b0110110101111100; // blue #6CACE4
+            else if (((x == 87 || x == 83) && y == 30) ||
+                    ((y == 32 || y == 28) && x == 85) ||
+                    ((x == 87 || x == 83) && y == 28) ||
+                    ((x == 87 || x == 83) && y == 32) ||
+                    (x <= 86 && x >= 84 && y <= 31 && y >= 29))
+                oled_data <= 16'b1111110111000011; // yellow #FFB81C
+            else 
+                oled_data <= 16'b1111111111111111; // white
+
+
+
+        end else if (sw[4:0] == 5'b10000 && (circle_6 >= 38 && circle_6 <= 50)) begin// if switch is on, then can choose player
+            oled_data <= 16'b11111_111111_11111; //white
+            led[4:0] <= 5'b10000;
+            P1_character <= 0;
+        end else if (sw[4:0] == 5'b01000 && (circle_7 >= 38 && circle_7 <= 50)) begin // if switch is on, then can choose player
+            oled_data <= 16'b11111_111111_11111; //white
+            led[4:0] <= 5'b01000;
+            P1_character <= 1;
+        end else if (sw[4:0] == 5'b00100 && (circle_8 >= 38 && circle_8 <= 50)) begin // if switch is on, then can choose player
+            oled_data <= 16'b11111_111111_11111; //white 
+            led[4:0] <= 5'b00100;
+            P1_character <= 2;
+        end else if (sw[4:0] == 5'b00010 && (circle_9 >= 38 && circle_9 <= 50)) begin// if switch is on, then can choose player
+            oled_data <= 16'b11111_111111_11111; //white    
+            led[4:0] <= 5'b00010;
+            P1_character <= 3;
+        end else if (sw[4:0] == 5'b00001 && (circle_10 >= 38 && circle_10 <= 50)) begin // if switch is on, then can choose player
+            oled_data <= 16'b11111_111111_11111; //white 
+            led[4:0] <= 5'b00001;      
+            P1_character <= 4;       
+                
+        end else if (sw[15:11] == 5'b10000 && (circle_1 >= 38 && circle_1 <= 50)) begin// if switch is on, then can choose player
+            oled_data <= 16'b11111_111111_11111; //white
+            led[15:11] <= 5'b10000;
+            P2_character <= 0;
+        end else if (sw[15:11] == 5'b01000 && (circle_2 >= 38 && circle_2 <= 50)) begin// if switch is on, then can choose player
+            oled_data <= 16'b11111_111111_11111; //white
+            led[15:11] <= 5'b01000;
+            P2_character <= 1;
+        end else if (sw[15:11] == 5'b00100  && (circle_3 >= 38 && circle_3 <= 50)) begin // if switch is on, then can choose player
+            oled_data <= 16'b11111_111111_11111; //white 
+            led[15:11] <= 5'b00100;
+            P2_character <= 2;
+        end else if (sw[15:11] == 5'b00010  && (circle_4 >= 38 && circle_4 <= 50)) begin // if switch is on, then can choose player
+            oled_data <= 16'b11111_111111_11111; //white  
+            led[15:11] <= 5'b00010;  
+            P2_character <= 3;
+        end else if (sw[15:11] == 5'b00001  && (circle_5 >= 38 && circle_5 <= 50)) begin // if switch is on, then can choose player
+            oled_data <= 16'b11111_111111_11111; //white   
+            led[15:11] <= 5'b00001;
+            P2_character <= 4;
+              
+         //P1
+        end else if ((y >= 10 && y <= 20 && x >= 3 && x <= 4) || 
+                    (x >= 5 && x <= 7 && y >= 10 && y <= 11) ||
+                    (x >= 5 && x <= 7 && y >=14 && y <= 15) ||
+                    (x >=7 && x <= 8 && y >= 12 && y <= 13) ||
+                    (x >= 12 && x <=13 && y >= 10 && y <=18) ||
+                    (x >= 10 && x <=11 && y >=12 &&y <=13)||
+                    (x >= 10 && x <= 15 && y >= 19 && y <= 20)) begin
+                    oled_data <= 16'b0000000000000000;
+            // P2        
+        end else if ((y >= 30 && y <= 40 && x >= 3 && x <= 4) || 
+                    (x >= 5 && x <= 7 && y >= 30 && y <= 31) ||
+                    (x >= 5 && x <= 7 && y >=34 && y <= 35) ||
+                    (x >=7 && x <= 8 && y >= 32 && y <= 33) ||
+                    (x >= 10 && x <= 15 && y >= 39 && y <= 40) ||
+                    (x >= 10 && x <= 11 && y >= 37 && y <= 38) ||
+                    (x >= 12 && x <= 13 && y >= 36 && y <= 37) ||
+                    (x >= 13 && x <= 14 && y >= 34 && y <= 35) ||
+                    (x >= 14 && x <= 15 && y >= 32 && y <= 33) ||
+                    (x >= 11 && x <= 14 && y >= 30 && y <= 31) ||
+                    (x >= 10 && x <= 11 && y >= 32 && y <= 33)) begin                                    
+                   oled_data <= 16'b0000000000000000;                                                                       
+        end else begin
+            led[15:11] <= 5'b00000;
+            led[4:0] <= 5'b00000;
+            /*P1_character <= 6;
+            P2_character <= 6;  */    
+            oled_data <= 16'b00000_000000_00001; // background
+        end
+    end
+    
+endmodule
