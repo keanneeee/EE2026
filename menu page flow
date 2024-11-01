@@ -1,9 +1,8 @@
-module menu(input [2:0] game_set, input [12:0] pixel_index, input btnR, btnL, btnC, input basys_clock, output reg [15:0] oled_data);
+module menu(input [2:0] game_set, input [12:0] pixel_index, input btnR, btnL, btnC, input basys_clock, output reg [15:0] oled_data, output reg [4:0] count = 0);
     
     // game_set = 0 if still playing, game_set = 1 if P1 wins, game_set = 2 if P2_wins
     
     wire clk_25M;
-    reg [4:0] count = 0;
     
     flexible_clock unit25Mhz (basys_clock, 1, clk_25M);
     
