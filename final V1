@@ -52,16 +52,18 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0]
     //collision_detection unit_P1_collision(basys_clock, after_collision_P1, pixel_mem_all , direction_P1,  P1_x_output, P1_y_output, power_P1, power_P2, resultant_d_P1, collision_detected_P1);
     //collision_detection unit_P2_collision(basys_clock, after_collision_P2, pixel_mem_all , direction_P2,  P2_x_output, P2_y_output, power_P2, power_P1, resultant_d_P2, collision_detected_P2);
     
-    wire btnC_debounced;
+    wire btnC_debounced, btnL_debounced, btnR_debounced;
     debounce unit_btnC_d (basys_clock, btnC, btnC_debounced);
-
+    debounce unit_btnL_d (basys_clock, btnL, btnL_debounced);
+    debounce unit_btnR_d (basys_clock, btnR, btnR_debounced);
+    
     reg [1:0] turn_state = 0;  
     reg [27:0] delay_counter = 0; 
     
     // turn loop
     always @ (posedge basys_clock) begin
         if (kick_off == 0) begin
-            if ((P1_selected != P2_selected) && btnL && btnR) begin
+            if ((P1_selected != P2_selected) && btnL_debounced && btnR_debounced) begin
                 kick_off <= 1; 
             end
         end else if (kick_off == 1) begin
@@ -147,8 +149,6 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0]
     );
 
 endmodule
-
-
 
 
 `timescale 1ns / 1ps
