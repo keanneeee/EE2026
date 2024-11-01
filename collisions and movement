@@ -1,5 +1,5 @@
-module collision_detection(input basys_clock, input pixel_memory [0:6143], input initial_direction, input x_centre, input y_centre, input powerA, input powerB, output reg resultant_d);
-reg [2:0] radius = 3'd5;
+
+module collision_detection(input basys_clock, input after_collision, input [0:6143] pixel_memory, input initial_direction, input x_centre, input y_centre, input powerA, input powerB, output reg resultant_d, output reg [1:0] collision_detected);
 wire position1_x;
 wire position1_y;
 wire position2_x, position2_y;
@@ -14,303 +14,380 @@ if (powerA == 0 && powerB!= 0) begin //collision mechanics with players and ball
     if (pixel_memory [y_centre * 96  + x_centre + 6] == pixel_memory [y_centre * 96  + x_centre + 7] || pixel_memory [(y_centre-1) * 96  + x_centre + 6] == pixel_memory [(y_centre - 1) * 96  + x_centre + 7] || pixel_memory [(y_centre + 1) * 96  + x_centre + 6] == pixel_memory [(y_centre + 1) * 96  + x_centre + 7])
       begin
         resultant_d = 8; //D E W
+        collision_detected <= 1;
       end
     if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 3) * 96  + x_centre + 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 4) * 96  + x_centre + 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 2) * 96  + x_centre + 6]|| pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 2) * 96  + x_centre + 7])
       begin
         resultant_d = 7; //D ESE WNW
+        collision_detected <= 1;
       end
     if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 4) * 96  + x_centre + 5] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 5) * 96  + x_centre + 4] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 5) * 96  + x_centre + 5])
       begin
         resultant_d = 6; //D SE NW
+        collision_detected <= 1;
       end
     if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 6) * 96  + x_centre + 4] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 6) * 96  + x_centre + 3] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 6) * 96  + x_centre + 2]|| pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 6) * 96  + x_centre + 4])
       begin
         resultant_d = 5; //D SSE NNW
+        collision_detected <= 1;
       end
     if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 7) * 96  + x_centre ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 7) * 96  + x_centre + 1] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 7) * 96  + x_centre - 1])
       begin
         resultant_d = 4; //D S N
+        collision_detected <= 1;
       end
     if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 7) * 96  + x_centre - 2] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 6) * 96  + x_centre - 2] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 6) * 96  + x_centre - 3] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 6) * 96  + x_centre - 4])
       begin
         resultant_d <= 3; //D ssw nne
+        collision_detected <= 1;
       end
     if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 5) * 96  + x_centre - 4 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 5) * 96  + x_centre - 5] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 4) * 96  + x_centre - 4])
       begin
         resultant_d <= 2; //D sw ne
+        collision_detected <= 1;
      end
     if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 4) * 96  + x_centre - 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 3) * 96  + x_centre - 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 2) * 96  + x_centre - 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 2) * 96  + x_centre - 7])
       begin
         resultant_d <= 1;// D wsw ene
+        collision_detected <= 1;
       end
     if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre) * 96  + x_centre - 6 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 1) * 96  + x_centre - 7] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 1) * 96  + x_centre - 7])
       begin
         resultant_d <= 0; // D w e
+       collision_detected <= 1;
       end
     if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 2) * 96  + x_centre - 6 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 2) * 96  + x_centre -7] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 4) * 96  + x_centre - 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 3) * 96  + x_centre - 6])
       begin
       resultant_d <= 15; //D wnw ese
+      collision_detected <= 1;
       end
     if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 4) * 96  + x_centre - 5 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 5) * 96  + x_centre - 4] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 5) * 96  + x_centre - 5])
       begin
       resultant_d <= 14; // D NW SE
+      collision_detected <= 1;
       end
     if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 6) * 96  + x_centre - 4 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 6) * 96  + x_centre - 3] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 6) * 96  + x_centre - 2] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 7) * 96  + x_centre - 2])
       begin
       resultant_d <= 13; // D nnw sse
+      collision_detected <= 1;
       end
     if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 7) * 96  + x_centre - 1 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 7) * 96  + x_centre] || pixel_memory [(y_centre ) * 96  + x_centre + 6] == pixel_memory [(y_centre - 7) * 96  + x_centre + 1])
       begin
       resultant_d <= 12; //D N S
+      collision_detected <= 1;
       end
     if (pixel_memory [(y_centre) * 96  + x_centre +6] == pixel_memory [(y_centre - 7) * 96  + x_centre + 2 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 6) * 96  + x_centre + 2] || pixel_memory [(y_centre ) * 96  + x_centre + 6] == pixel_memory [(y_centre - 6) * 96  + x_centre + 3] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 6) * 96  + x_centre + 4])
       begin
       resultant_d <= 11; //D nne ssw
+      collision_detected <= 1;
       end
     if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 5) * 96  + x_centre + 4 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 5) * 96  + x_centre + 5] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 4) * 96  + x_centre + 5])
       begin
       resultant_d <= 10; //D ne sw
+      collision_detected <= 1;
       end
     if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 4) * 96  + x_centre + 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 3) * 96  + x_centre + 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 2) * 96  + x_centre + 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 2) * 96  + x_centre - 7])
       begin
       resultant_d <= 9;  // ene wsw    
+      collision_detected <= 1;
       end
     end 
     else if (powerA != 0 && powerB != 0) begin
     if (pixel_memory [y_centre * 96  + x_centre + 6] == pixel_memory [y_centre * 96  + x_centre + 7] || pixel_memory [(y_centre-1) * 96  + x_centre + 6] == pixel_memory [(y_centre - 1) * 96  + x_centre + 7] || pixel_memory [(y_centre + 1) * 96  + x_centre + 6] == pixel_memory [(y_centre + 1) * 96  + x_centre + 7])
           begin
             resultant_d = 8; //D E W
+            collision_detected <= 1;
           end
         if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 3) * 96  + x_centre + 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 4) * 96  + x_centre + 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 2) * 96  + x_centre + 6]|| pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 2) * 96  + x_centre + 7])
           begin
             resultant_d = 7; //D ESE WNW
+            collision_detected <= 1;
           end
         if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 4) * 96  + x_centre + 5] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 5) * 96  + x_centre + 4] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 5) * 96  + x_centre + 5])
           begin
             resultant_d = 6; //D SE NW
+            collision_detected <= 1;
           end
         if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 6) * 96  + x_centre + 4] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 6) * 96  + x_centre + 3] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 6) * 96  + x_centre + 2]|| pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 6) * 96  + x_centre + 4])
           begin
             resultant_d = 5; //D SSE NNW
+            collision_detected <= 1;
           end
         if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 7) * 96  + x_centre ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 7) * 96  + x_centre + 1] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 7) * 96  + x_centre - 1])
           begin
             resultant_d = 4; //D S N
+            collision_detected <= 1;
           end
         if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 7) * 96  + x_centre - 2] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 6) * 96  + x_centre - 2] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 6) * 96  + x_centre - 3] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 6) * 96  + x_centre - 4])
           begin
             resultant_d <= 3; //D ssw nne
+            collision_detected <= 1;
           end
         if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 5) * 96  + x_centre - 4 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 5) * 96  + x_centre - 5] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 4) * 96  + x_centre - 4])
           begin
             resultant_d <= 2; //D sw ne
+            collision_detected <= 1;
          end
         if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 4) * 96  + x_centre - 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 3) * 96  + x_centre - 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 2) * 96  + x_centre - 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 2) * 96  + x_centre - 7])
           begin
             resultant_d <= 1;// D wsw ene
+            collision_detected <= 1;
           end
         if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre) * 96  + x_centre - 6 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 1) * 96  + x_centre - 7] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 1) * 96  + x_centre - 7])
           begin
             resultant_d <= 0; // D w e
+           collision_detected <= 1;
           end
         if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 2) * 96  + x_centre - 6 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 2) * 96  + x_centre -7] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 4) * 96  + x_centre - 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 3) * 96  + x_centre - 6])
           begin
           resultant_d <= 15; //D wnw ese
+          collision_detected <= 1;
           end
         if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 4) * 96  + x_centre - 5 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 5) * 96  + x_centre - 4] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 5) * 96  + x_centre - 5])
           begin
           resultant_d <= 14; // D NW SE
+          collision_detected <= 1;
           end
         if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 6) * 96  + x_centre - 4 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 6) * 96  + x_centre - 3] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 6) * 96  + x_centre - 2] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 7) * 96  + x_centre - 2])
           begin
           resultant_d <= 13; // D nnw sse
+          collision_detected <= 1;
           end
         if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 7) * 96  + x_centre - 1 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 7) * 96  + x_centre] || pixel_memory [(y_centre ) * 96  + x_centre + 6] == pixel_memory [(y_centre - 7) * 96  + x_centre + 1])
           begin
           resultant_d <= 12; //D N S
+          collision_detected <= 1;
           end
         if (pixel_memory [(y_centre) * 96  + x_centre +6] == pixel_memory [(y_centre - 7) * 96  + x_centre + 2 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 6) * 96  + x_centre + 2] || pixel_memory [(y_centre ) * 96  + x_centre + 6] == pixel_memory [(y_centre - 6) * 96  + x_centre + 3] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 6) * 96  + x_centre + 4])
           begin
           resultant_d <= 11; //D nne ssw
+          collision_detected <= 1;
           end
         if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 5) * 96  + x_centre + 4 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 5) * 96  + x_centre + 5] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 4) * 96  + x_centre + 5])
           begin
           resultant_d <= 10; //D ne sw
+          collision_detected <= 1;
           end
         if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 4) * 96  + x_centre + 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 3) * 96  + x_centre + 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 2) * 96  + x_centre + 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 2) * 96  + x_centre - 7])
           begin
           resultant_d <= 9;  // ene wsw    
+          collision_detected <= 1;
           end
         end 
       else if( powerA != 0 && powerB == 0) begin // A move and B dont move
-      if (pixel_memory [y_centre * 96  + x_centre + 6] == pixel_memory [y_centre * 96  + x_centre + 7] || pixel_memory [(y_centre-1) * 96  + x_centre + 6] == pixel_memory [(y_centre - 1) * 96  + x_centre + 7] || pixel_memory [(y_centre + 1) * 96  + x_centre + 6] == pixel_memory [(y_centre + 1) * 96  + x_centre + 7])
+    if (pixel_memory [y_centre * 96  + x_centre + 6] == pixel_memory [y_centre * 96  + x_centre + 7] || pixel_memory [(y_centre-1) * 96  + x_centre + 6] == pixel_memory [(y_centre - 1) * 96  + x_centre + 7] || pixel_memory [(y_centre + 1) * 96  + x_centre + 6] == pixel_memory [(y_centre + 1) * 96  + x_centre + 7])
             begin
               resultant_d = 8; //D E W
+              collision_detected <= 1;
             end
           if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 3) * 96  + x_centre + 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 4) * 96  + x_centre + 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 2) * 96  + x_centre + 6]|| pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 2) * 96  + x_centre + 7])
             begin
               resultant_d = 7; //D ESE WNW
+              collision_detected <= 1;
             end
           if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 4) * 96  + x_centre + 5] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 5) * 96  + x_centre + 4] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 5) * 96  + x_centre + 5])
             begin
               resultant_d = 6; //D SE NW
+              collision_detected <= 1;
             end
           if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 6) * 96  + x_centre + 4] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 6) * 96  + x_centre + 3] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 6) * 96  + x_centre + 2]|| pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 6) * 96  + x_centre + 4])
             begin
               resultant_d = 5; //D SSE NNW
+              collision_detected <= 1;
             end
           if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 7) * 96  + x_centre ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 7) * 96  + x_centre + 1] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 7) * 96  + x_centre - 1])
             begin
               resultant_d = 4; //D S N
+              collision_detected <= 1;
             end
           if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 7) * 96  + x_centre - 2] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 6) * 96  + x_centre - 2] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 6) * 96  + x_centre - 3] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 6) * 96  + x_centre - 4])
             begin
               resultant_d <= 3; //D ssw nne
+              collision_detected <= 1;
             end
           if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 5) * 96  + x_centre - 4 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 5) * 96  + x_centre - 5] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 4) * 96  + x_centre - 4])
             begin
               resultant_d <= 2; //D sw ne
+              collision_detected <= 1;
            end
           if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 4) * 96  + x_centre - 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 3) * 96  + x_centre - 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 2) * 96  + x_centre - 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 2) * 96  + x_centre - 7])
             begin
               resultant_d <= 1;// D wsw ene
+              collision_detected <= 1;
             end
           if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre) * 96  + x_centre - 6 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 1) * 96  + x_centre - 7] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 1) * 96  + x_centre - 7])
             begin
               resultant_d <= 0; // D w e
+             collision_detected <= 1;
             end
           if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre + 2) * 96  + x_centre - 6 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 2) * 96  + x_centre -7] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 4) * 96  + x_centre - 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 3) * 96  + x_centre - 6])
             begin
             resultant_d <= 15; //D wnw ese
+            collision_detected <= 1;
             end
           if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 4) * 96  + x_centre - 5 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 5) * 96  + x_centre - 4] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 5) * 96  + x_centre - 5])
             begin
             resultant_d <= 14; // D NW SE
+            collision_detected <= 1;
             end
           if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 6) * 96  + x_centre - 4 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 6) * 96  + x_centre - 3] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 6) * 96  + x_centre - 2] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 7) * 96  + x_centre - 2])
             begin
             resultant_d <= 13; // D nnw sse
+            collision_detected <= 1;
             end
           if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 7) * 96  + x_centre - 1 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 7) * 96  + x_centre] || pixel_memory [(y_centre ) * 96  + x_centre + 6] == pixel_memory [(y_centre - 7) * 96  + x_centre + 1])
             begin
             resultant_d <= 12; //D N S
+            collision_detected <= 1;
             end
           if (pixel_memory [(y_centre) * 96  + x_centre +6] == pixel_memory [(y_centre - 7) * 96  + x_centre + 2 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 6) * 96  + x_centre + 2] || pixel_memory [(y_centre ) * 96  + x_centre + 6] == pixel_memory [(y_centre - 6) * 96  + x_centre + 3] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 6) * 96  + x_centre + 4])
             begin
             resultant_d <= 11; //D nne ssw
+            collision_detected <= 1;
             end
           if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 5) * 96  + x_centre + 4 ] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 5) * 96  + x_centre + 5] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 4) * 96  + x_centre + 5])
             begin
             resultant_d <= 10; //D ne sw
+            collision_detected <= 1;
             end
           if (pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 4) * 96  + x_centre + 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 3) * 96  + x_centre + 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 2) * 96  + x_centre + 6] || pixel_memory [(y_centre) * 96  + x_centre + 6] == pixel_memory [(y_centre - 2) * 96  + x_centre - 7])
             begin
             resultant_d <= 9;  // ene wsw    
+            collision_detected <= 1;
             end
           end 
 else if (initial_direction == 0) // cases where ball collides with wall
 begin
   if (x_centre >= 81)
   resultant_d <= 8;
+  collision_detected <= 1;
 end
 else if (initial_direction == 15)
 begin
   if (x_centre >= 81)
     resultant_d <=9;
+    collision_detected <= 2;
   if(y_centre >= 49)
     resultant_d <= 1;
+    collision_detected <= 2;
 end
 else if (initial_direction == 14)
 begin
   if (x_centre >= 81)
     resultant_d <= 10;
+   collision_detected <= 2;
   if(y_centre >= 49)
     resultant_d <= 2;
+    collision_detected <= 2;
 end
 else if (initial_direction == 13)
    begin
      if (x_centre >= 81)
        resultant_d <= 11;
+       collision_detected <= 2;
      if(y_centre >= 49)
        resultant_d <= 3;
+      collision_detected <= 2;
  end
  else if (initial_direction == 12)
  begin
     if (y_centre >= 49)
       resultant_d <= 4;
+      collision_detected <= 2;
  end
  else if (initial_direction == 11)
    begin
 if (x_centre <= 15)
     resultant_d <= 13;
+    collision_detected <= 2;
   if(y_centre >= 49)
     resultant_d <= 5;
+    collision_detected <= 2;
 end   
 else if (initial_direction == 10)
   begin
   if (x_centre <= 15)
     resultant_d <= 14;
+    collision_detected <= 2;
   if(y_centre >= 49)
     resultant_d <= 6;
+    collision_detected <= 2;
   end   
  else if (initial_direction == 9)
     begin
     if (x_centre <= 15)
       resultant_d <= 15;
+      collision_detected <= 2;
     if(y_centre >= 49)
       resultant_d <= 5;
+      collision_detected <= 2;
     end 
  else if (initial_direction == 8)
   begin
   if (x_centre <= 15)
     resultant_d <= 0;
+    collision_detected <= 2;
   end
  else if (initial_direction == 7)
     begin
     if (x_centre <= 15)
       resultant_d <= 1;
+      collision_detected <= 2;
     if(y_centre >= 15)
       resultant_d <= 9;
+      collision_detected <= 2;
     end 
 else if (initial_direction == 6)
   begin
   if (x_centre <= 15)
     resultant_d <= 2;
+    collision_detected <= 2;
   if(y_centre >= 15)
     resultant_d <= 10;
+    collision_detected <= 2;
   end 
 else if (initial_direction == 5)
     begin
     if (x_centre <= 15)
       resultant_d <= 3;
+      collision_detected <= 2;
     if(y_centre >= 15)
       resultant_d <= 11;
+      collision_detected <= 2;
     end 
 else if (initial_direction == 4)
     begin
     if(y_centre >= 15)
       resultant_d <= 12;
+      collision_detected <= 2;
     end 
 else if (initial_direction == 3)
     begin
     if (x_centre <= 81)
       resultant_d <= 5;
+      collision_detected <= 2;
     if(y_centre >= 15)
       resultant_d <= 13;
+      collision_detected <= 2;
     end 
  else if (initial_direction == 2)
     begin
     if (x_centre <= 81)
       resultant_d <= 6;
+      collision_detected <= 2;
     if(y_centre >= 15)
       resultant_d <= 14;
+      collision_detected <= 2;
     end 
     else if (initial_direction == 1)
         begin
         if (x_centre <= 81)
           resultant_d <= 7;
+          collision_detected <= 2;
         if(y_centre >= 15)
           resultant_d <= 15;
+          collision_detected <= 2;
         end 
-end
-endmodule
+      end
+      
+   endmodule 
