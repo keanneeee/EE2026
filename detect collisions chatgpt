@@ -1,0 +1,224 @@
+// back up back up plan, not exactly working but somethings diff when the 2 players touching each other
+module collision_detection_test(
+    input basys_clock,
+    input [7:0] x_centre_P1, y_centre_P1, 
+    input [7:0] x_centre_P2, y_centre_P2,
+    input [4:0] initial_direction_P1, initial_direction_P2, 
+    input [4:0] initial_power_P1, initial_power_P2, 
+    input [7:0] P1_radius, P2_radius, 
+    output reg [4:0] resultant_d_P1, resultant_d_P2, 
+    output reg [4:0] resultant_p_P1, resultant_p_P2, 
+    output reg [1:0] collision_detected
+);
+
+// Temporary variables for collision check
+reg collision_occurred;
+reg [15:0] distance_squared; // Square of the distance between centers
+reg [15:0] combined_radii_squared; // Square of combined radii
+
+always @(posedge basys_clock) begin
+    collision_detected <= 0;
+    resultant_d_P1 <= initial_direction_P1;
+    resultant_d_P2 <= initial_direction_P2;
+    resultant_p_P1 <= initial_power_P1;
+    resultant_p_P2 <= initial_power_P2;
+
+    // Calculate the square of the distance between P1 and P2 centers
+    distance_squared <= (x_centre_P1 - x_centre_P2) * (x_centre_P1 - x_centre_P2) +
+                        (y_centre_P1 - y_centre_P2) * (y_centre_P1 - y_centre_P2);
+
+    // Calculate the square of the combined radii
+    combined_radii_squared <= (P1_radius + P2_radius) * (P1_radius + P2_radius);
+
+    // Check for collision based on distance between centers and combined radii
+    if (distance_squared <= combined_radii_squared) begin
+        collision_occurred <= 1;
+        collision_detected <= 1;
+        
+        if (initial_power_P1 > initial_power_P2) begin // Case where P1 hits P2
+            resultant_p_P2 <= initial_power_P1; // P2 receives P1's power
+            resultant_p_P1 <= 0; // P1 stops moving
+            resultant_d_P2 <= initial_direction_P1; // P2 takes P1's direction
+            resultant_d_P1 <= initial_direction_P1; // P1's direction is set but irrelevant as it stops
+        end else begin // Case where P2 hits P1
+            resultant_p_P1 <= initial_power_P2; // P1 receives P2's power
+            resultant_p_P2 <= 0; // P2 stops moving
+            resultant_d_P1 <= initial_direction_P2; // P1 takes P2's direction
+            resultant_d_P2 <= initial_direction_P2; // P2's direction is set but irrelevant as it stops
+        end
+    end else begin
+        collision_occurred <= 0;
+    end
+end
+
+endmodule
+
+
+// mirror way
+/*module collision_detection_test(
+    input basys_clock,
+    input [7:0] x_centre_P1, y_centre_P1, 
+    input [7:0] x_centre_P2, y_centre_P2,
+    input [4:0] initial_direction_P1, initial_direction_P2, 
+    input [4:0] initial_power_P1, initial_power_P2, 
+    input [7:0] P1_radius, P2_radius, 
+    output reg [4:0] resultant_d_P1, resultant_d_P2, 
+    output reg [4:0] resultant_p_P1, resultant_p_P2, 
+    output reg [1:0] collision_detected
+);
+
+// Temporary variables for collision check
+reg collision_occurred;
+reg [15:0] distance_squared; // Square of the distance between centers
+reg [15:0] combined_radii_squared; // Square of combined radii
+
+// Function to calculate reflection based on point of contact (POC) and initial direction
+function [4:0] reflect_direction;
+    input [4:0] initial_direction;
+    input [4:0] point_of_contact;
+    case (point_of_contact)
+        0: reflect_direction = (16 - initial_direction) % 16; // East POC
+        1: reflect_direction = (16 - initial_direction + 2) % 16; // ENE POC
+        2: reflect_direction = (16 - initial_direction + 4) % 16; // NE POC
+        3: reflect_direction = (16 - initial_direction + 6) % 16; // NNE POC
+        4: reflect_direction = (16 - initial_direction + 8) % 16; // North POC
+        5: reflect_direction = (16 - initial_direction + 10) % 16; // NNW POC
+        6: reflect_direction = (16 - initial_direction + 12) % 16; // NW POC
+        7: reflect_direction = (16 - initial_direction + 14) % 16; // WNW POC
+        8: reflect_direction = (initial_direction + 8) % 16; // West POC
+        9: reflect_direction = (16 - initial_direction + 10) % 16; // WSW POC
+        10: reflect_direction = (16 - initial_direction + 8) % 16; // SW POC
+        11: reflect_direction = (16 - initial_direction + 6) % 16; // SSW POC
+        12: reflect_direction = (initial_direction + 8) % 16; // South POC
+        13: reflect_direction = (16 - initial_direction + 14) % 16; // SSE POC
+        14: reflect_direction = (16 - initial_direction + 12) % 16; // SE POC
+        15: reflect_direction = (16 - initial_direction + 10) % 16; // ESE POC
+        default: reflect_direction = initial_direction; // Default case, no change
+    endcase
+endfunction
+
+reg [4:0] point_of_contact;
+reg signed [8:0] dx, dy; // Difference in x and y positions
+reg signed [8:0] angle; // Angle between centers, approximated
+
+always @(posedge basys_clock) begin
+    collision_detected <= 0;
+    resultant_d_P1 <= initial_direction_P1;
+    resultant_d_P2 <= initial_direction_P2;
+    resultant_p_P1 <= initial_power_P1;
+    resultant_p_P2 <= initial_power_P2;
+
+    // Calculate the differences in x and y positions
+    dx = x_centre_P2 - x_centre_P1;
+    dy = y_centre_P2 - y_centre_P1;
+
+    // Calculate an approximate angle based on dx and dy
+    // Example: Basic quadrant check (simplified)
+    if (dx == 0) begin
+        angle = (dy > 0) ? 4 : 12; // Directly North or South
+    end
+    else if (dy == 0) begin
+        angle = (dx > 0) ? 0 : 8; // Directly East or West
+    end
+    else begin
+        // Approximate angle using a simple ratio
+        if (dx > 0 && dy > 0) angle = 2; // NE quadrant
+        else if (dx < 0 && dy > 0) angle = 6; // NW quadrant
+        else if (dx < 0 && dy < 0) angle = 10; // SW quadrant
+        else if (dx > 0 && dy < 0) angle = 14; // SE quadrant
+    end
+
+    // Map the angle to compass direction (POC)
+    point_of_contact = angle;
+
+    // Continue with collision detection
+    distance_squared <= (dx * dx) + (dy * dy);
+    combined_radii_squared <= (P1_radius + P2_radius) * (P1_radius + P2_radius);
+
+    if (distance_squared <= combined_radii_squared) begin
+        collision_occurred <= 1;
+        collision_detected <= 1;
+        
+        // Calculate average power
+        resultant_p_P1 <= (initial_power_P1 + initial_power_P2) / 2;
+        resultant_p_P2 <= (initial_power_P1 + initial_power_P2) / 2;
+
+        // Determine direction based on POC and initial direction
+        if (initial_power_P1 > initial_power_P2) begin // P1 hits P2
+            resultant_d_P2 <= initial_direction_P1;
+            resultant_d_P1 <= reflect_direction(initial_direction_P1, point_of_contact);
+        end
+        else begin // P2 hits P1
+            resultant_d_P1 <= initial_direction_P2;
+            resultant_d_P2 <= reflect_direction(initial_direction_P2, point_of_contact);
+        end
+    end else begin
+        collision_occurred <= 0;
+    end
+end
+
+endmodule*/
+
+
+
+// split power in half          
+/*module collision_detection_test(
+    input basys_clock,
+    input [7:0] x_centre_P1, y_centre_P1, 
+    input [7:0] x_centre_P2, y_centre_P2,
+    input [4:0] initial_direction_P1, initial_direction_P2, 
+    input [4:0] initial_power_P1, initial_power_P2, 
+    input [7:0] P1_radius, P2_radius, 
+    output reg [4:0] resultant_d_P1, resultant_d_P2, 
+    output reg [4:0] resultant_p_P1, resultant_p_P2, 
+    output reg [1:0] collision_detected
+);
+
+reg collision_occurred;
+reg [15:0] distance_squared; // Square of the distance between centers
+reg [15:0] combined_radii_squared; // Square of combined radii
+
+always @(posedge basys_clock) begin
+    collision_detected <= 0;
+    resultant_d_P1 <= initial_direction_P1;
+    resultant_d_P2 <= initial_direction_P2;
+    resultant_p_P1 <= initial_power_P1;
+    resultant_p_P2 <= initial_power_P2;
+
+    // Calculate the square of the distance between P1 and P2 centers
+    distance_squared <= (x_centre_P1 - x_centre_P2) * (x_centre_P1 - x_centre_P2) +
+                        (y_centre_P1 - y_centre_P2) * (y_centre_P1 - y_centre_P2);
+
+    // Calculate the square of the combined radii
+    combined_radii_squared <= (P1_radius + P2_radius) * (P1_radius + P2_radius);
+
+    // Check for collision based on distance between centers and combined radii
+    if (distance_squared <= combined_radii_squared) begin
+        collision_occurred <= 1;
+        collision_detected <= 1;
+    end else begin
+        collision_occurred <= 0;
+    end
+
+    // Collision logic for power and direction
+    if (collision_occurred) begin
+        // Calculate average power
+        resultant_p_P1 <= (initial_power_P1 + initial_power_P2) / 2;
+        resultant_p_P2 <= (initial_power_P1 + initial_power_P2) / 2;
+
+        // Determine direction based on point of contact
+        if (initial_power_P1 > initial_power_P2) begin // P1 hits P2
+            resultant_d_P2 <= initial_direction_P1;
+            resultant_d_P1 <= (initial_direction_P1 + 8) % 16; // Reflection for P1
+        end
+        else begin // P2 hits P1
+            resultant_d_P1 <= initial_direction_P2;
+            resultant_d_P2 <= (initial_direction_P2 + 8) % 16; // Reflection for P2
+        end
+    end
+end
+
+endmodule*/
+
+
+
