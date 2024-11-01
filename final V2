@@ -14,7 +14,7 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0]
     //wire [0:6143] pixel_mem_P1, pixel_mem_P2, pixel_mem_ball;
     //reg [0:6143] pixel_mem_all;
     reg kick_off = 0;
-    wire collision_detected;
+    wire collision_detected_P1P2, collision_detected_P1ball, collision_detected_P2ball;
     
     wire resultant_d_P1, resultant_d_P2, resultant_d_ball;
     // wire [1:0] collision_detected_P1, collision_detected_P2, collision_detected_ball;
@@ -37,9 +37,9 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0]
     
     character_select unit_select (pixel_index, basys_clock, btnC, sw[15:0], led_select, oled_data_select, P1_selected, P2_selected);
     
-    aiming unit_P1(menu_count, scored, kick_off, collision_detected , resultant_d_P1, resultant_p_P1, 20, 32, 6, turn_P1, pixel_index, 16'b0000000000000000, P1_selected, basys_clock, btnU, btnD, btnC, direction_P1, led_P1, power_P1, oled_data_P1, P1_x_output, P1_y_output);
-    aiming unit_P2(menu_count, scored, kick_off, collision_detected , resultant_d_P2, resultant_p_P2, 75, 32, 6, turn_P2, pixel_index, 16'b0000000000000000, P2_selected, basys_clock, btnU, btnD, btnC, direction_P2, led_P2, power_P2, oled_data_P2, P2_x_output, P2_y_output);
-    aiming unit_ball(menu_count, scored, kick_off, collision_detected, resultant_d_ball, resultant_p_ball, 48, 32, 2, 0, pixel_index, 16'b1111111111111111, 5, basys_clock, btnU, btnD, btnC, direction_ball, led_ball, power_ball, oled_data_ball, ball_x_output, ball_y_output);
+    aiming unit_P1(menu_count, scored, kick_off, (collision_detected_P1P2 || collision_detected_P1ball) , resultant_d_P1, resultant_p_P1, 20, 32, 6, turn_P1, pixel_index, 16'b0000000000000000, P1_selected, basys_clock, btnU, btnD, btnC, direction_P1, led_P1, power_P1, oled_data_P1, P1_x_output, P1_y_output);
+    aiming unit_P2(menu_count, scored, kick_off, (collision_detected_P1P2 || collision_detected_P2ball) , resultant_d_P2, resultant_p_P2, 75, 32, 6, turn_P2, pixel_index, 16'b0000000000000000, P2_selected, basys_clock, btnU, btnD, btnC, direction_P2, led_P2, power_P2, oled_data_P2, P2_x_output, P2_y_output);
+    aiming unit_ball(menu_count, scored, kick_off, (collision_detected_P1ball || collision_detected_P2ball), resultant_d_ball, resultant_p_ball, 48, 32, 2, 0, pixel_index, 16'b1111111111111111, 5, basys_clock, btnU, btnD, btnC, direction_ball, led_ball, power_ball, oled_data_ball, ball_x_output, ball_y_output);
     
     //collision_detected_P1
     //collision_detected_P2
@@ -51,9 +51,9 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0]
     
     //collision_detection unit_P1_collision(basys_clock, after_collision_P1, pixel_mem_all , direction_P1,  P1_x_output, P1_y_output, power_P1, power_P2, resultant_d_P1, collision_detected_P1);
     //collision_detection unit_P2_collision(basys_clock, after_collision_P2, pixel_mem_all , direction_P2,  P2_x_output, P2_y_output, power_P2, power_P1, resultant_d_P2, collision_detected_P2);
-    collision_detection_test unit_collision1(basys_clock, P1_x_output, P1_y_output, P2_x_output, P2_y_output, direction_P1, direction_P2, power_P1, power_P2, 6, 6, resultant_d_P1, resultant_d_P2, resultant_p_P1, resultant_p_P2, collision_detected);
-    collision_detection_test unit_collision2(basys_clock, P1_x_output, P1_y_output, ball_x_output, ball_y_output, direction_P1, direction_ball, power_P1, power_ball, 6, 2, resultant_d_P1, resultant_d_ball, resultant_p_P1, resultant_p_ball, collision_detected);
-    collision_detection_test unit_collision3(basys_clock, ball_x_output, ball_y_output, P2_x_output, P2_y_output, direction_ball, direction_P2, power_ball, power_P2, 2, 6, resultant_d_ball, resultant_d_P2, resultant_p_ball, resultant_p_P2, collision_detected);
+    collision_detection_test unit_collision1(basys_clock, P1_x_output, P1_y_output, P2_x_output, P2_y_output, direction_P1, direction_P2, power_P1, power_P2, 6, 6, resultant_d_P1, resultant_d_P2, resultant_p_P1, resultant_p_P2, collision_detected_P1P2);
+    collision_detection_test unit_collision2(basys_clock, P1_x_output, P1_y_output, ball_x_output, ball_y_output, direction_P1, direction_ball, power_P1, power_ball, 6, 2, resultant_d_P1, resultant_d_ball, resultant_p_P1, resultant_p_ball, collision_detected_P1ball);
+    collision_detection_test unit_collision3(basys_clock, ball_x_output, ball_y_output, P2_x_output, P2_y_output, direction_ball, direction_P2, power_ball, power_P2, 2, 6, resultant_d_ball, resultant_d_P2, resultant_p_ball, resultant_p_P2, collision_detected_P2ball);
     
     wire btnC_debounced, btnL_debounced, btnR_debounced;
     debounce unit_btnC_d (basys_clock, btnC, btnC_debounced);
@@ -152,7 +152,6 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0]
     );
 
 endmodule
-
 
 
 
