@@ -1,0 +1,79 @@
+module menu(input [2:0] game_set, input [12:0] pixel_index, input btnR, btnL, btnC, input basys_clock, output reg [15:0] oled_data);
+    
+    // game_set = 0 if still playing, game_set = 1 if P1 wins, game_set = 2 if P2_wins
+    
+    wire clk_25M;
+    reg [4:0] count = 0;
+    
+    flexible_clock unit25Mhz (basys_clock, 1, clk_25M);
+    
+    // loop to check state
+    always @ (posedge basys_clock) begin
+        if (count == 0 && btnR) 
+            count <= 1;
+        else if (count == 1 && btnL)
+            count <= 0;
+        else if (count == 1 && btnC)
+            count <= 2;
+        else if (count == 2 && btnC)
+            count <= 1;
+        else if (count == 0 && btnC)
+            count <= 3;
+        else if (count == 3 && btnR)
+            count <= 4;
+        else if (count == 4 && btnL)
+            count <= 3;
+        else if (count == 4 && btnR)
+            count <= 5;
+        else if (count == 5 && btnL)
+            count <= 4;
+        else if (count == 5 && btnC)
+            count <= 0;
+        else if (count == 3 && btnC)
+            count <= 6;
+        else if (count == 6 && btnR)
+            count <= 7;
+        else if (count == 7 && btnL)
+            count <= 6;
+        else if (count == 7 && btnC)
+            count <= 3;
+        else if (count == 6 && btnL && btnR) // special case for kick off
+            count <= 8;
+        else if (count == 8 && game_set == 1)
+            count <= 9;
+        else if  (count == 8 && game_set == 2)
+            count <= 10;
+        else if (count == 9 && btnC)
+            count <= 0;
+        else if (count == 10 && btnC)
+            count <= 0;           
+    end
+    
+    // loop for oled_data
+    always @ (posedge clk_25M) begin
+        if (count == 0) begin
+            // oled data soccer field, logo, play, controls w play selected
+        end else if (count == 1) begin
+            // oled data soccer field, logo, play, controls w controls selected
+        end else if (count == 2) begin
+            // oled data soccer field, How To Play, btnU - rotate anticlockwise, btnD - rotate clockwise, btnC - Press and hold to shoot!, back w back selected
+        end else if (count == 3) begin
+            // oled data soccer field, logo, 2P, 1P, back w 2P selected
+        end else if (count == 4) begin
+            // oled data soccer field, logo, 2P, 1P, back w 1P selected        
+        end else if (count == 5) begin
+            // oled data soccer field, logo, 2P, 1P, back w back selected    
+        end else if (count == 6) begin
+            // oled data w soccer field, kick off, back w kick off selected        
+        end else if (count == 7) begin
+            // oled data w soccer field, kick off, back w back selected      
+        end else if (count == 8) begin
+            oled_data <= 16'b0000000000000001; // actual game play w me and keanes code so dont display anything        
+        end else if (count == 9) begin
+            // oled data soccer field, logo, Player 1 wins, press btnC to play again, w btnC selected
+        end else if (count == 10) begin
+            // oled data soccer field, logo, Player 2 wins, press btnC to play again, w btnC selected     
+        end
+    end 
+    
+endmodule
