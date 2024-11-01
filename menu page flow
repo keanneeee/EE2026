@@ -9,43 +9,43 @@ module menu(input [2:0] game_set, input [12:0] pixel_index, input btnR, btnL, bt
     
     // loop to check state
     always @ (posedge basys_clock) begin
-        if (count == 0 && btnR) 
+        if (count == 0 && btnR) // play selected -> controls selected
             count <= 1;
-        else if (count == 1 && btnL)
+        else if (count == 1 && btnL) // controls selected -> play selected
             count <= 0;
-        else if (count == 1 && btnC)
+        else if (count == 1 && btnC) // controls selected -> control page w back selected
             count <= 2;
-        else if (count == 2 && btnC)
+        else if (count == 2 && btnC) // control page w back selected -> controls selected
             count <= 1;
-        else if (count == 0 && btnC)
+        else if (count == 0 && btnC) // play selected -> 2P selected
             count <= 3;
-        else if (count == 3 && btnR)
+        else if (count == 3 && btnR) // 2P selected -> 1P selected
             count <= 4;
-        else if (count == 4 && btnL)
+        else if (count == 4 && btnL) // 1P selected -> 2P selected
             count <= 3;
-        else if (count == 4 && btnR)
+        else if (count == 4 && btnR) // 1P selected -> back selected
             count <= 5;
-        else if (count == 5 && btnL)
+        else if (count == 5 && btnL) // back selected -> 1P selected
             count <= 4;
-        else if (count == 5 && btnC)
+        else if (count == 5 && btnC) // back selected -> play selected
             count <= 0;
-        else if (count == 3 && btnC)
+        else if (count == 3 && btnC) // 2P selected -> kick off selected
             count <= 6;
-        else if (count == 6 && btnR)
+        else if (count == 6 && btnR) // kick off selected -> back selected
             count <= 7;
-        else if (count == 7 && btnL)
+        else if (count == 7 && btnL) // back selected -> kick off selected
             count <= 6;
-        else if (count == 7 && btnC)
+        else if (count == 7 && btnC) // back selected -> 2P selected
             count <= 3;
-        else if (count == 6 && btnL && btnR) // special case for kick off
+        else if (count == 6 && btnL && btnR) // kick off selected -> nothing
             count <= 8;
-        else if (count == 8 && game_set == 1)
+        else if (count == 8 && game_set == 1) // nothing -> P1 wins, btnC selected
             count <= 9;
-        else if  (count == 8 && game_set == 2)
+        else if  (count == 8 && game_set == 2) // nothing -> P2 wins, btnC selected
             count <= 10;
-        else if (count == 9 && btnC)
+        else if (count == 9 && btnC) // P1 wins, btnC selected -> play selected
             count <= 0;
-        else if (count == 10 && btnC)
+        else if (count == 10 && btnC) // P2 wins, btnC selected -> play selected
             count <= 0;           
     end
     
