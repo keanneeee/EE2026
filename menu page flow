@@ -8,15 +8,19 @@ module menu(input [2:0] game_set, input [12:0] pixel_index, input btnR, btnL, bt
     
     // loop to check state
     always @ (posedge basys_clock) begin
-        if (count == 0 && btnR) // play selected -> controls selected
+        if (count == 0 && btnR) // main menu play selected -> main menu controls selected
             count <= 1;
-        else if (count == 1 && btnL) // controls selected -> play selected
+        else if (count == 1 && btnL) // main menu controls selected -> main menu play selected
             count <= 0;
-        else if (count == 1 && btnC) // controls selected -> control page w back selected
+        else if (count == 1 && btnC) // main menu controls selected -> control page btnU w next selected
             count <= 2;
-        else if (count == 2 && btnC) // control page w back selected -> controls selected
+        else if (count == 2 && btnC) // control page btnU w next selected -> control page btnD w next selected
+            count <= 11;
+        else if (count == 11 && btnC) // control page btnD w next selected -> control page btnC w back selected
+            count <= 12;
+        else if (count == 12 && btnC) // control page btnC w back selected -> main menu controls selected
             count <= 1;
-        else if (count == 0 && btnC) // play selected -> 2P selected
+        else if (count == 0 && btnC) // main menu play selected -> 2P selected
             count <= 3;
         else if (count == 3 && btnR) // 2P selected -> 1P selected
             count <= 4;
@@ -55,7 +59,7 @@ module menu(input [2:0] game_set, input [12:0] pixel_index, input btnR, btnL, bt
         end else if (count == 1) begin
             // oled data soccer field, logo, play, controls w controls selected
         end else if (count == 2) begin
-            // oled data soccer field, How To Play, btnU - rotate anticlockwise, btnD - rotate clockwise, btnC - Press and hold to shoot!, back w back selected
+            // oled data soccer field, How To Play, btnU - rotate anticlockwise, next selected
         end else if (count == 3) begin
             // oled data soccer field, logo, 2P, 1P, back w 2P selected
         end else if (count == 4) begin
@@ -72,7 +76,11 @@ module menu(input [2:0] game_set, input [12:0] pixel_index, input btnR, btnL, bt
             // oled data soccer field, logo, Player 1 wins, press btnC to play again, w btnC selected
         end else if (count == 10) begin
             // oled data soccer field, logo, Player 2 wins, press btnC to play again, w btnC selected     
-        end
+        end else if (count == 11) begin
+            // oled data soccer field, How To Play, btnD - rotate clockwise, next selected
+        end else if (count == 12) begin
+            // oled data soccer field, How To Play, btnC - Press and hold to shoot!, back selected
+        end 
     end 
     
 endmodule
