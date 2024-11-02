@@ -19,26 +19,32 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-
-module colision_detection_v2(
+module collision_detection_v2(
      input basys_clock, 
      input [7:0] x1, y1, x2, y2, bx, by, //p1 p2 and ball coordinates 
-     input [4:0] IP1, IP2, IP3,
+     input [4:0] IP1, IP2, IPB,
      input [4:0] ID1, ID2, IDB, 
      output reg [4:0] RD1, RD2, RDB, 
-     output reg [4:0] collision_detected //0(no collision detected), 1(IP1 == 0, IP2 != 0), 2(IP1 != 0, IP2 == 0), 3(IP1 != 0, IP2 != 0)
+     output reg [4:0] OP1, OP2, OPB,
+     output reg collision_detected_p1p2,// collision detected on p1 by p2 (p1 power ==0)
+     output reg collision_detected_p1b,
+     output reg collision_detected_p2b 
     );
-wire signed [7:0] dx, dy, c1, c2;
-wire signed [7:0] dx2, dy2;
-reg [5:0] POC1, POC2; 
+    
+reg [15:0] distance_squared_p1p2, distance_squared_p1b, distance_squared_p2b;
+reg [15:0] combined_radii_squared_p1p2, combined_radii_squared_p1b, combined_radii_squared_p2b;
+
+wire signed [7:0] dx, dy, bx1, by1, bx2, by2;
+wire signed [7:0] dx2, dy2, b1x, b1y, b2x, b2y;
+reg [5:0] POC1, POC2, POC3, POC4, POC5, POC6; 
 reg [5:0] angle, angle2;
-reg collision = 0;
+reg [2:0] collision = 0;// 0(no collision), 1(player player), 2(player ball), 3(player wall), 4(ball wall)
+//wire signed [7:0] ballx, bally;
+//localparam integer RADIUS_SQUARED = 144;
+//wire[13:0] c1_squared, c2_squared;
+//wire[13:0] distance_squared;
 
-localparam integer RADIUS_SQUARED = 144;
-wire[13:0] c1_squared, c2_squared;
-wire[13:0] distance_squared;
-
-assign c1 = (x1 > x2)?(x1 - x2):(x2 - x1);
+/*assign c1 = (x1 > x2)?(x1 - x2):(x2 - x1);
 assign c2 = (y1 > y2) ? (y1 - y2): ( y2 - y1);
 
 assign c1_squared = c1 *c1;
@@ -46,19 +52,38 @@ assign c2_squared = c2 *c2;
 
 assign distance_squared = c1_squared + c2_squared;
 
-assign dx = x2 - x1;
-assign dx = y2 - y1;
-assign dx2 = x1 - x2;
-assign dy2 = y1 - y2;
-
-always @(posedge basys_clock) begin
+*/
+/*always @(posedge basys_clock) begin
 if (distance_squared <= RADIUS_SQUARED) begin
     collision <= 1;//detect player on player collision
     end
-    if (collision_detected != 0)
-    collision <= 0;
-  end
-  
+    else begin
+    collision <= 0; end
+  end*/
+always @(posedge basys_clock) begin // keep running this to keep updating distance of objects from each other
+ distance_squared_p1p2 <= (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+ distance_squared_p1b <= (x1 - bx) * (x1 - bx) + (y1 - by) * (y1 - by);
+ distance_squared_p2b <= (x2 - bx) * (x2 - bx) + (y2 - by) * (y2 - by);
+ 
+ combined_radii_squared_p1p2 <= 144;
+ combined_radii_squared_p1b <= 64;
+ combined_radii_squared_p2b <= 64;
+ 
+ end
+ //calculating point of contact on both cirlces 
+assign dx2 = x1 - x2;
+assign dy2 = y1 - y2;
+assign dx = x2 - x1;
+assign dy = y2 - y1;
+assign bx1 = bx - x1;
+assign by1 = by - y1;
+assign b1x = x1 - bx;
+assign b1y = y1 - by;
+assign bx2 = x2 - bx;
+assign by2 = y2 - by;
+assign b2x = bx - x2;
+assign b2y = by - y2;
+
 always @(posedge basys_clock) begin
   if(dx == 0) begin
     angle <= (dy > 0) ? 4 : 12;//north or south
@@ -73,7 +98,7 @@ always @(posedge basys_clock) begin
       else if (dx > 0 && dy < 0) begin angle <= 14; end
     end
     POC1 <= angle;
-  if(dx2 == 0) begin
+    if(dx2 == 0) begin // point of contact of player 2 on player 1
         angle2 <= (dy2 > 0) ? 4 : 12;//north or south
       end
       else if (dy2 == 0) begin
@@ -85,24 +110,132 @@ always @(posedge basys_clock) begin
           else if (dx2 < 0 && dy2 < 0) begin angle2 <= 10; end
           else if (dx2 > 0 && dy2 < 0) begin angle2 <= 14; end
         end
-        POC2 <= angle2;
-  end
-always @(posedge basys_clock) begin
-if (collision) begin
-  if (IP1 == 0 && IP2 != 0) begin
-    collision_detected <= 1;
+        POC2 <= angle2; //point of contact of player 1 on player 2
+    if(bx1 == 0) begin
+        angle <= (by1 > 0) ? 4 : 12;//north or south
+        end
+        else if (by1 == 0) begin
+          angle <= (bx1 > 0) ? 0 : 8;
+        end
+        else begin
+          if (bx1 > 0 && by1 > 0) begin angle <= 2; end
+          else if (bx1 < 0 && by1 > 0) begin angle <= 6; end
+          else if (bx1 < 0 && by1 < 0) begin angle <= 10; end
+          else if (bx1 > 0 && by1 < 0) begin angle <= 14; end
+        end
+        POC3 <= angle;     
+    if(b1x == 0) begin
+        angle <= (b1y > 0) ? 4 : 12;//north or south
+        end
+        else if (b1y == 0) begin
+          angle <= (b1x > 0) ? 0 : 8;
+        end
+        else begin
+          if (b1x > 0 && b1y > 0) begin angle <= 2; end
+          else if (b1x < 0 && b1y > 0) begin angle <= 6; end
+          else if (b1x < 0 && b1y < 0) begin angle <= 10; end
+          else if (b1x > 0 && b1y < 0) begin angle <= 14; end
+        end
+        POC4 <= angle;     
+    if(bx2 == 0) begin
+        angle <= (by2 > 0) ? 4 : 12;//north or south
+        end
+        else if (by2 == 0) begin
+          angle <= (bx2 > 0) ? 0 : 8;
+        end
+        else begin
+          if (bx2 > 0 && by2 > 0) begin angle <= 2; end
+          else if (bx2 < 0 && by2 > 0) begin angle <= 6; end
+          else if (bx2 < 0 && by2 < 0) begin angle <= 10; end
+          else if (bx2 > 0 && by2 < 0) begin angle <= 14; end
+        end
+        POC5 <= angle;     
+    if(b2x == 0) begin
+        angle <= (b2y > 0) ? 4 : 12;//north or south
+        end
+        else if (b2y == 0) begin
+          angle <= (b2x > 0) ? 0 : 8;
+        end
+        else begin
+          if (b2x > 0 && b2y > 0) begin angle <= 2; end
+          else if (b2x < 0 && b2y > 0) begin angle <= 6; end
+          else if (b2x < 0 && b2y < 0) begin angle <= 10; end
+          else if (b2x > 0 && b2y < 0) begin angle <= 14; end
+        end
+        POC6 <= angle;     
+    end
     
+    
+always @(posedge basys_clock) begin
+if (distance_squared_p1p2 <= combined_radii_squared_p1p2) begin
+  if (IP1 == 0 && IP2 != 0) begin
+    collision_detected_p1p2 <= 1;
+    OP1 <= IP2;
+    OP2 <= 0;
     RD1 <= (POC1 + 8) % 16;
   if (IP1 != 0 && IP2 == 0) begin
-    collision_detected <= 2;
+    collision_detected_p1p2 <= 1;
+    OP1 <= 0;
+    OP2 <= IP1;
     RD2 <= (POC2 +8) % 16;
       end
   if( IP1 != 0 && IP2 != 0) begin
-      collision_detected <= 3;
-      RD2 <= ID1;
-      RD1 <= ID2;
-      end
-    end  
+    collision_detected_p1p2 <= 1;
+    OP1 <= IP2;
+    OP2 <= IP1;
+    RD2 <= ID1;
+    RD1 <= ID2;
+    end
+  end  
+  else begin
+  collision_detected_p1p2 <= 0;
+  end  
+end
+else if (distance_squared_p1b <= combined_radii_squared_p1b) begin
+  if (IP1 != 0 && IPB == 0) begin
+  collision_detected_p1b <= 1;
+  OP1 <= 0;
+  OPB <= IP1;
+  RDB <= (POC3 + 8) % 16;
   end
+  else if (IP1 == 0 && IPB != 0)begin
+  collision_detected_p1b <= 1;
+  OP1 <= IPB;
+  OPB <= 0;
+  RD1 <= (POC4 +8) %16;
+  end
+  else if (IP1 != 0 && IPB != 0) begin
+  collision_detected_p1b <= 1;
+  OP1 <= IPB;
+  OPB <= IP1;
+  RD1 <= IDB;
+  RDB <= ID1;
+  end
+end
+else if (distance_squared_p2b <= combined_radii_squared_p2b) begin
+  if (IP2 != 0 && IPB == 0) begin
+  collision_detected_p2b <= 1;
+  OP2 <= 0;
+  OPB <= IP2;
+  RDB <= (POC5 + 8) % 16;
+  end
+  if (IP2 == 0 && IPB != 0) begin
+  collision_detected_p2b <= 1;
+  OP2 <= IPB;
+  OPB <= 0;
+  RD2 <= (POC6 + 8) % 16;
+  end
+  if (IP2 != 0 && IPB != 0) begin
+  collision_detected_p2b <= 1;
+  OP2 <= IPB;
+  OPB <= IP2;
+  RD2 <= IDB;
+  RDB <= ID2;
+  end
+end
+else 
+collision_detected_p2b <= 0;
+collision_detected_p1b <= 0;
+collision_detected_p1p2 <= 0;
 end
 endmodule
