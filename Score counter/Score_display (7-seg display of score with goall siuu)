@@ -78,7 +78,7 @@ module score_display(input basys_clock, input [4:0] menu_count, input [3:0] disp
         end else if (goal) begin
             goal_counter <= goal_counter + 1;
     
-            if (goal_counter >= 32'd50000000) begin
+            if (goal_counter >= 32'd30000000) begin
                 goal_counter <= 0;
                 goal_moving <= goal_moving + 1;
     
