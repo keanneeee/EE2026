@@ -1,4 +1,4 @@
-module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0] sw, output [7:0] JB, output reg [15:0] led);
+module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0] sw, output [7:0] JB, output reg [15:0] led, output reg [7:0] seg, output reg [3:0] an);
     wire frame_begin, sending_pixels, sample_pixel;
     wire [12:0] pixel_index;
     wire [15:0] led_P1, led_P2, led_ball, led_select;
@@ -17,7 +17,9 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0]
     wire [2:0] game_set;
     wire [4:0] menu_count;
     wire scored;
-    
+    wire [3:0] display;
+    wire [7:0] seg_score;
+    wire [3:0] an_score;
     assign x = pixel_index % 96;
     assign y = pixel_index / 96;
     
@@ -25,19 +27,22 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0]
     flexible_clock unit25Mhz (basys_clock, 1, clk_25M);
     flexible_clock unit20hz (basys_clock, 2499999, clk_20);
     
+    goal_detection unit_goal_detection(basys_clock, menu_count, bx, by, scored, display);
+    score_display unit_score_display(basys_clock,  menu_count, display, scored, game_set, seg_score, an_score);
+    
     menu unit_menu(game_set, pixel_index, btnR, btnL, btnC,btnU, btnD, basys_clock, oled_data_menu, menu_count);
     soccer_field unit_field(basys_clock,reset, pixel_index, oled_data_field);
     
     character_select unit_select (pixel_index, basys_clock, btnC, sw[15:0], led_select, oled_data_select, P1_selected, P2_selected);
     
-    aiming unit_P1(menu_count, scored, kick_off,(collision_detected_P1P2 || collision_detected_P1ball) , RD1, RP1, 20, 32, 6, turn_P1, pixel_index, 16'b0000000000000000, P1_selected, basys_clock, btnU, btnD, btnC, ID1, led_P1, IP1, oled_data_P1, x1, y1);
-    aiming unit_P2(menu_count, scored, kick_off, (collision_detected_P1P2 || collision_detected_P2ball) , RD2, RP2, 75, 32, 6, turn_P2, pixel_index, 16'b0000000000000000, P2_selected, basys_clock, btnU, btnD, btnC, ID2, led_P2, IP2, oled_data_P2, x2, y2);
-    aiming unit_ball(menu_count, scored, kick_off,(collision_detected_P1ball || collision_detected_P2ball) , RDB, RPB, 48, 32, 2, 0, pixel_index, 16'b1111111111111111, 5, basys_clock, btnU, btnD, btnC, IDB, led_ball, IPB, oled_data_ball, bx, by);
+    aiming unit_P1(menu_count, scored, kick_off, 0, RD1, RP1, 20, 32, 6, turn_P1, pixel_index, 16'b0000000000000000, P1_selected, basys_clock, btnU, btnD, btnC, ID1, led_P1, IP1, oled_data_P1, x1, y1);
+    aiming unit_P2(menu_count, scored, kick_off, 0 , RD2, RP2, 75, 32, 6, turn_P2, pixel_index, 16'b0000000000000000, P2_selected, basys_clock, btnU, btnD, btnC, ID2, led_P2, IP2, oled_data_P2, x2, y2);
+    aiming unit_ball(menu_count, scored, kick_off, 0, RDB, RPB, 48, 32, 2, 0, pixel_index, 16'b1111111111111111, 5, basys_clock, btnU, btnD, btnC, IDB, led_ball, IPB, oled_data_ball, bx, by);
     //(collision_detected_P1P2 || collision_detected_P1ball)
     //(collision_detected_P1P2 || collision_detected_P2ball)
     //(collision_detected_P1ball || collision_detected_P2ball)
     collision_detection_test unit_collison(basys_clock,x1, y1, x2, y2,bx, by,ID1, ID2, IDB, IP1, IP2, IPB,6,6,2,RD1, RD2, RDB, RP1, RP2, RPB,collision_detected_P1P2, collision_detected_P1ball, collision_detected_P2ball);
-
+    
     
     wire btnC_debounced, btnL_debounced, btnR_debounced;
     debounce unit_btnC_d (basys_clock, btnC, btnC_debounced);
@@ -101,7 +106,7 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0]
 
     // main oled data loop
     always @(posedge clk_25M) begin
-        if (menu_count < 6 || menu_count > 9) begin
+        if (menu_count < 6 || (menu_count > 9 && menu_count < 13)) begin
             oled_data <= oled_data_menu;
         end else if (menu_count == 6 || menu_count == 7) begin
             if (oled_data_select != 16'b0000000000000001) begin
@@ -119,9 +124,27 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0]
             end else begin
                 oled_data <= oled_data_field;
             end
+        end else if (kick_off && menu_count == 13) begin
+            if (oled_data_P1 != 16'b0000000000000001) begin
+                oled_data <= oled_data_P1;
+            end else if (oled_data_P2 != 16'b0000000000000001) begin
+                oled_data <= oled_data_P2;
+            end else if (oled_data_ball != 16'b0000000000000001) begin
+                oled_data <= oled_data_ball;
+            end else if (oled_data_menu != 16'b0000000000000000) begin
+                oled_data <= oled_data_menu;
+            end else begin
+                oled_data <= oled_data_field;
+            end
         end
     end
-
+    
+    // an and seg loop
+    always @ (posedge basys_clock) begin
+        an <= an_score;
+        seg <= seg_score;
+    end
+    
     Oled_Display unit_Oled(
         .clk(clk_6p25), 
         .reset(0), 
@@ -140,9 +163,6 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0]
     );
 
 endmodule
-
-
-
 
 module aiming(input[4:0] menu_count, input scored, input kick_off, input [1:0] collision_detected, input [4:0] resultant_d, input[4:0] resultant_p, input [7:0] x_input, y_input, r_input, input turn, input [12:0] pixel_index, input [15:0] arrow_colour, input [4:0] player_selected, input basys_clock, btnU, btnD, btnC,
 output reg [4:0] direction = 0, output reg [15:0] led, output reg [4:0] power, output reg [15:0] oled_data, output [7:0] x, y);
@@ -285,7 +305,7 @@ output reg [4:0] direction = 0, output reg [15:0] led, output reg [4:0] power, o
                     15: initial_d <= 9; 
                     default: initial_d <= initial_d; 
                 endcase
-                power <= power + 3;
+                power <= power + 5;
                 direction <= initial_d;
             end else if (!collision_detected && $signed(x_centre - radius) <= 1) begin // left border hit
                 case (initial_d)
@@ -298,7 +318,7 @@ output reg [4:0] direction = 0, output reg [15:0] led, output reg [4:0] power, o
                     9: initial_d <= 15;  
                     default: initial_d <= initial_d;  
                 endcase
-                power <= power + 3;
+                power <= power + 5;
                 direction <= initial_d;
             end else if (!collision_detected && y_centre + radius >= 62) begin // bottom border hit
                 case (initial_d)
@@ -311,7 +331,7 @@ output reg [4:0] direction = 0, output reg [15:0] led, output reg [4:0] power, o
                     15: initial_d <= 1;  
                     default: initial_d <= initial_d; 
                 endcase
-                power <= power + 3;
+                power <= power + 5;
                 direction <= initial_d;
             end else if (!collision_detected && $signed(y_centre - radius) <= 1) begin // up border hit
                 case (initial_d)
@@ -324,7 +344,7 @@ output reg [4:0] direction = 0, output reg [15:0] led, output reg [4:0] power, o
                     1: initial_d <= 15;  
                     default: initial_d <= initial_d; 
                 endcase
-                power <= power + 3;
+                power <= power + 5;
                 direction <= initial_d;
             end
         
