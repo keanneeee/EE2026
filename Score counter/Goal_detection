@@ -1,0 +1,52 @@
+module goal_detection(input basys_clock, input reset, input btnL,btnR, 
+//    input [4:0] ball_x_centre, ball_y_centre, 
+    output reg goal_signal, output reg [4:0] sw);
+    
+    reg [1:0] p1_score = 2'b00;
+    reg [1:0] p2_score = 2'b00;
+    
+    //debouncer
+    reg btnL_prev = 0;
+    reg btnR_prev = 0;
+    reg btnL_debounced = 0;
+    reg btnR_debounced = 0;
+
+    always @(posedge basys_clock or posedge reset) begin
+        if (reset) begin
+            p1_score <= 2'b00;
+            p2_score <= 2'b00;
+            sw <= 4'b0000;
+            goal_signal <= 0;
+            btnL_prev <= 0;
+            btnR_prev <= 0;
+            btnL_debounced <= 0;
+            btnR_debounced <= 0;
+        end else begin
+            //debounce btnL, btnR
+            btnL_debounced <= (btnL && !btnL_prev);
+            btnR_debounced <= (btnR && !btnR_prev);
+
+            //player 1 scores
+            if (btnL_debounced) begin
+                if (p1_score < 2'b11)
+                    p1_score <= p1_score + 1;
+                goal_signal <= 1;
+            end
+            //player 2 scores
+            else if (btnR_debounced) begin
+                if (p2_score < 2'b11)
+                    p2_score <= p2_score + 1;
+                goal_signal <= 1;
+            end else begin
+                goal_signal <= 0;
+            end
+            
+            //set outputs at end
+            sw <= {p1_score, p2_score};
+            btnL_prev <= btnL;
+            btnR_prev <= btnR;
+            
+        end
+    end
+
+endmodule
