@@ -142,10 +142,6 @@ endmodule
 
 
 
-
-`timescale 1ns / 1ps
-
-
 module aiming(input[4:0] menu_count, input scored, input kick_off, input [1:0] collision_detected, input [4:0] resultant_d, input[4:0] resultant_p, input [7:0] x_input, y_input, r_input, input turn, input [12:0] pixel_index, input [15:0] arrow_colour, input [4:0] player_selected, input basys_clock, btnU, btnD, btnC,
 output reg [4:0] direction = 0, output reg [15:0] led, output reg [4:0] power, output reg [15:0] oled_data, output [7:0] x, y, output reg after_collision);
     
@@ -363,8 +359,12 @@ output reg [4:0] direction = 0, output reg [15:0] led, output reg [4:0] power, o
     
     // aiming oled data loop 
     always @ (posedge clk_25M) begin
-        
-        if (turn && kick_off) begin
+        if (menu_count == 0) begin
+            if (turn) 
+                initial_d <= 0;
+            else 
+                initial_d <= 8;
+        end else if (turn && kick_off) begin
             if (change_counter_aim == 2500000) begin // Increase this value to slow it down
                 if (btnU) begin
                     if (initial_d == 15)
