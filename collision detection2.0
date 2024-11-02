@@ -21,27 +21,9 @@ wire signed [7:0] dx2, dy2, b1x, b1y, b2x, b2y;
 reg [5:0] POC1, POC2, POC3, POC4, POC5, POC6; 
 reg [5:0] angle, angle2;
 reg [2:0] collision = 0;// 0(no collision), 1(player player), 2(player ball), 3(player wall), 4(ball wall)
-//wire signed [7:0] ballx, bally;
-//localparam integer RADIUS_SQUARED = 144;
-//wire[13:0] c1_squared, c2_squared;
-//wire[13:0] distance_squared;
 
-/*assign c1 = (x1 > x2)?(x1 - x2):(x2 - x1);
-assign c2 = (y1 > y2) ? (y1 - y2): ( y2 - y1);
 
-assign c1_squared = c1 *c1;
-assign c2_squared = c2 *c2;
 
-assign distance_squared = c1_squared + c2_squared;
-
-*/
-/*always @(posedge basys_clock) begin
-if (distance_squared <= RADIUS_SQUARED) begin
-    collision <= 1;//detect player on player collision
-    end
-    else begin
-    collision <= 0; end
-  end*/
 always @(posedge basys_clock) begin // keep running this to keep updating distance of objects from each other
  distance_squared_p1p2 <= (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
  distance_squared_p1b <= (x1 - bx) * (x1 - bx) + (y1 - by) * (y1 - by);
