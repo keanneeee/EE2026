@@ -1,3 +1,6 @@
+`timescale 1ns / 1ps
+
+
 module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0] sw, output [7:0] JB, output reg [15:0] led, output reg [7:0] seg, output reg [3:0] an);
     wire frame_begin, sending_pixels, sample_pixel;
     wire [12:0] pixel_index;
@@ -163,6 +166,7 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0]
     );
 
 endmodule
+
 
 module aiming(input[4:0] menu_count, input scored, input kick_off, input [1:0] collision_detected, input [4:0] resultant_d, input[4:0] resultant_p, input [7:0] x_input, y_input, r_input, input turn, input [12:0] pixel_index, input [15:0] arrow_colour, input [4:0] player_selected, input basys_clock, btnU, btnD, btnC,
 output reg [4:0] direction = 0, output reg [15:0] led, output reg [4:0] power, output reg [15:0] oled_data, output [7:0] x, y);
