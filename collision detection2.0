@@ -97,6 +97,11 @@ if (collision) begin
     collision_detected <= 2;
     RD2 <= (POC2 +8) % 16;
       end
+  if( IP1 != 0 && IP2 != 0) begin
+      collision_detected <= 3;
+      RD2 <= ID1;
+      RD1 <= ID2;
+      end
     end  
   end
 end
