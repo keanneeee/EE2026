@@ -1,5 +1,9 @@
-module score_display(input basys_clock, input reset, input [3:0] sw, input btnC,
-    output reg p1_win = 0, output reg p2_win = 0, output reg showdown = 0, output reg [7:0] seg, output reg [3:0] an);
+`timescale 1ns / 1ps
+
+
+
+module score_display(input basys_clock, input [4:0] menu_count, input [3:0] display, input btnC,
+    output reg [2:0] game_set, output reg [7:0] seg, output reg [3:0] an);
     
     //player 1&2 sw inputs testing
     //player 1 score: 0100,1000,1100
@@ -32,8 +36,8 @@ module score_display(input basys_clock, input reset, input [3:0] sw, input btnC,
     end
 
     //refresh rate -----------------------------------------------------------------------------------------------------------------------
-    always @(posedge basys_clock or posedge reset)begin
-        if (reset) begin
+    always @(posedge basys_clock)begin
+        if (menu_count == 0) begin
             refresh_counter <= 0;
             anode_selector <= 0;
         end 
@@ -46,8 +50,8 @@ module score_display(input basys_clock, input reset, input [3:0] sw, input btnC,
         end
     end
 
-    always @(posedge basys_clock or posedge reset) begin
-        if (reset) begin
+    always @(posedge basys_clock) begin
+        if (menu_count == 0) begin
             goal_counter <= 0;
             goal_moving <= 0;
             goal <= 0;
@@ -442,10 +446,8 @@ module score_display(input basys_clock, input reset, input [3:0] sw, input btnC,
     endcase
     end else begin
     //SCORES: 0-1, 0-2, 0-3, 1-0, 2-0, 3-0 ---------------------------------------------------------------------------------
-    if (reset == 0 || sw == 4'b0000 || goal == 0)begin //p1: 0, p2: 0, 0-0
-        p1_win <= 0;
-        p2_win <= 0;
-        showdown <= 0;
+    if (!menu_count || display == 4'b0000 || goal == 0)begin //p1: 0, p2: 0, 0-0
+        game_set <= 3'b000;
         case (anode_selector)
             2'd0: begin
                 an = 4'b1110; //an0
@@ -470,7 +472,7 @@ module score_display(input basys_clock, input reset, input [3:0] sw, input btnC,
         endcase
     end
     
-    if (sw == 4'b0100)begin //p1: 1, p2: 0, 1-0
+    if (display == 4'b0100)begin //p1: 1, p2: 0, 1-0
         case (anode_selector)
             2'd0: begin
                 an = 4'b1110; //an0
@@ -495,7 +497,7 @@ module score_display(input basys_clock, input reset, input [3:0] sw, input btnC,
         endcase
     end
     
-    if (sw == 4'b1000)begin //p1: 2, p2: 0, 2-0
+    if (display == 4'b1000)begin //p1: 2, p2: 0, 2-0
         case (anode_selector)
             2'd0: begin
                 an = 4'b1110; //an0
@@ -520,8 +522,8 @@ module score_display(input basys_clock, input reset, input [3:0] sw, input btnC,
         endcase
     end
     
-    if (sw == 4'b1100)begin //p1: 3, p2: 0, 3-0
-        p1_win <= 1; //send out p1 wins
+    if (display == 4'b1100)begin //p1: 3, p2: 0, 3-0
+        game_set <= 1; //send out p1 wins
         case (anode_selector)
             2'd0: begin
                 an = 4'b1110; //an0
@@ -546,7 +548,7 @@ module score_display(input basys_clock, input reset, input [3:0] sw, input btnC,
         endcase
     end
     
-    if (sw == 4'b0001)begin //p1: 0, p2: 1, 0-1
+    if (display == 4'b0001)begin //p1: 0, p2: 1, 0-1
         case (anode_selector)
             2'd0: begin
                 an = 4'b1110; //an0
@@ -571,7 +573,7 @@ module score_display(input basys_clock, input reset, input [3:0] sw, input btnC,
         endcase
     end
     
-    if (sw == 4'b0010)begin //p1: 0, p2: 2, 0-2
+    if (display == 4'b0010)begin //p1: 0, p2: 2, 0-2
         case (anode_selector)
             2'd0: begin
                 an = 4'b1110; //an0
@@ -596,8 +598,8 @@ module score_display(input basys_clock, input reset, input [3:0] sw, input btnC,
         endcase
     end
     
-    if (sw == 4'b0011)begin //p1: 0, p2: 3, 0-3
-        p2_win <= 1; //send out p2 wins
+    if (display == 4'b0011)begin //p1: 0, p2: 3, 0-3
+        game_set <= 2; //send out p2 wins
         case (anode_selector)
             2'd0: begin
                 an = 4'b1110; //an0
@@ -623,7 +625,7 @@ module score_display(input basys_clock, input reset, input [3:0] sw, input btnC,
     end
     
     //SCORES: 1-1, 2-2 -------------------------------------------------------------------------------------------------------------
-    if (sw == 4'b0101)begin //p1: 1, p2: 1, 1-1
+    if (display == 4'b0101)begin //p1: 1, p2: 1, 1-1
         case (anode_selector)
             2'd0: begin
                 an = 4'b1110; //an0
@@ -648,8 +650,8 @@ module score_display(input basys_clock, input reset, input [3:0] sw, input btnC,
         endcase
     end
     
-    if (sw == 4'b1010)begin //p1: 2, p2: 2, 2-2
-        showdown <= 1; //sends out showdown, 1 more point to win
+    if (display == 4'b1010)begin //p1: 2, p2: 2, 2-2
+        game_set <= 3; //sends out showdown, 1 more point to win
         case (anode_selector)
             2'd0: begin
                 an = 4'b1110; //an0
@@ -675,7 +677,7 @@ module score_display(input basys_clock, input reset, input [3:0] sw, input btnC,
     end
     
     //SCORES: 1-2, 1-3, 2-1, 3-1 -------------------------------------------------------------------------------------------------------------
-    if (sw == 4'b0110)begin //p1: 1, p2: 2, 1-2
+    if (display == 4'b0110)begin //p1: 1, p2: 2, 1-2
         case (anode_selector)
             2'd0: begin
                 an = 4'b1110; //an0
@@ -700,8 +702,8 @@ module score_display(input basys_clock, input reset, input [3:0] sw, input btnC,
         endcase
     end
     
-    if (sw == 4'b0111)begin //p1: 1, p2: 3, 1-3
-        p2_win <= 1; //sends out p2 wins
+    if (display == 4'b0111)begin //p1: 1, p2: 3, 1-3
+        game_set <= 2; //sends out p2 wins
         case (anode_selector)
             2'd0: begin
                 an = 4'b1110; //an0
@@ -726,7 +728,7 @@ module score_display(input basys_clock, input reset, input [3:0] sw, input btnC,
         endcase
     end
     
-    if (sw == 4'b1001)begin //p1: 2, p2: 1, 2-1
+    if (display == 4'b1001)begin //p1: 2, p2: 1, 2-1
         case (anode_selector)
             2'd0: begin
                 an = 4'b1110; //an0
@@ -751,8 +753,8 @@ module score_display(input basys_clock, input reset, input [3:0] sw, input btnC,
         endcase
     end
     
-    if (sw == 4'b1101)begin //p1: 3, p2: 1, 3-1
-        p1_win <= 1; //sends out p1 wins
+    if (display == 4'b1101)begin //p1: 3, p2: 1, 3-1
+        game_set <= 1; //sends out p1 wins
         case (anode_selector)
             2'd0: begin
                 an = 4'b1110; //an0
@@ -779,7 +781,7 @@ module score_display(input basys_clock, input reset, input [3:0] sw, input btnC,
     
     //SCORES: 2-1, 2-3, 1-2, 3-2 -------------------------------------------------------------------------------------------------------------
     
-    if (sw == 4'b1001)begin //p1: 2, p2: 1, 2-1
+    if (display == 4'b1001)begin //p1: 2, p2: 1, 2-1
         case (anode_selector)
             2'd0: begin
                 an = 4'b1110; //an0
@@ -804,9 +806,9 @@ module score_display(input basys_clock, input reset, input [3:0] sw, input btnC,
         endcase
     end
     
-    if (sw == 4'b1011)begin //p1: 2, p2: 3, 2-3
-        p2_win <= 1; //sends out p2 wins
-        showdown <= 0; //reset showdown
+    if (display == 4'b1011)begin //p1: 2, p2: 3, 2-3
+        game_set <= 2; //sends out p2 wins
+        // showdown <= 0; //reset showdown
         case (anode_selector)
             2'd0: begin
                 an = 4'b1110; //an0
@@ -831,7 +833,7 @@ module score_display(input basys_clock, input reset, input [3:0] sw, input btnC,
         endcase
     end
     
-    if (sw == 4'b0110)begin //p1: 1, p2: 2, 1-2
+    if (display == 4'b0110)begin //p1: 1, p2: 2, 1-2
         case (anode_selector)
             2'd0: begin
                 an = 4'b1110; //an0
@@ -856,9 +858,9 @@ module score_display(input basys_clock, input reset, input [3:0] sw, input btnC,
         endcase
     end
     
-    if (sw == 4'b1110)begin //p1: 3, p2: 2, 3-2
-        p1_win <= 1; //sends out p1 wins
-        showdown <= 0; //reset showdown
+    if (display == 4'b1110)begin //p1: 3, p2: 2, 3-2
+        game_set <= 1; //sends out p1 wins
+        //showdown <= 0; //reset showdown
         case (anode_selector)
             2'd0: begin
                 an = 4'b1110; //an0
