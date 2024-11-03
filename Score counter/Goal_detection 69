@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 
 
-module goal_detection(input basys_clock, input [4:0] menu_count, input [4:0] bx, by, 
+module goal_detection(input basys_clock, input [4:0] menu_count, input [7:0] bx, by, 
     output reg scored, output reg [3:0] display);
     
     reg [1:0] p1_score = 2'b00;
