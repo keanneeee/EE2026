@@ -18,7 +18,7 @@ module menu(input [2:0] game_set, input [12:0] pixel_index, input btnR, btnL, bt
     // count = 12 oled data soccer field, How To Play, btnC - Press and hold to shoot!, back selected
     // count = 13 oled data for GOLDEN GOAL background is black
  
-    wire clk_25M;
+    wire clk_25M, clk_1hz;
     wire btnC_d, btnL_d, btnR_d, btnD_d, btnU_d;
     reg prev_btnC_d = 0, prev_btnL_d = 0, prev_btnR_d = 0;
     debounce unit_C(basys_clock, btnC, btnC_d);
@@ -28,6 +28,7 @@ module menu(input [2:0] game_set, input [12:0] pixel_index, input btnR, btnL, bt
     debounce unit_D(basys_clock, btnD, btnD_d);
     
     flexible_clock unit25Mhz (basys_clock, 1, clk_25M);
+    flexible_clock unit1hz (basys_clock, 49_999_999, clk_1hz);
     
     // Loop to check state
     always @(posedge basys_clock) begin
