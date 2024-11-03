@@ -1,0 +1,225 @@
+`timescale 1ns / 1ps
+
+
+module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0] sw, output [7:0] JB, output reg [15:0] led, output reg [7:0] seg, output reg [3:0] an);
+    wire frame_begin, sending_pixels, sample_pixel;
+    wire [12:0] pixel_index;
+    wire [15:0] led_P1, led_P2, led_ball, led_select;
+    reg [15:0] oled_data;
+    wire [15:0] oled_data_P1, oled_data_P2, oled_data_field, oled_data_ball, oled_data_select, oled_data_menu;
+    wire [4:0] IP1,IP2,IPB,ID1,ID2,IDB, RP1,RP2,RPB,RD1,RD2,RDB;
+    reg reset = 0; 
+    wire clk_6p25, clk_20, clk_25M, clk_1Hz;
+    reg turn_P1 = 1,turn_P2 = 0;
+    wire [4:0] P1_selected, P2_selected;
+    wire [7:0] x1,y1,x2,y2,bx,by;
+    wire [7:0] x,y;
+    reg kick_off = 0;
+    wire collision_detected_P1P2, collision_detected_P1ball, collision_detected_P2ball;
+    wire [2:0] game_set;
+    wire [4:0] menu_count;
+    wire scored;
+    wire [3:0] display;
+    wire [7:0] seg_score;
+    wire [3:0] an_score;
+    wire collision_detected_P1, collision_detected_P2, collision_detected_ball;
+    assign x = pixel_index % 96;
+    assign y = pixel_index / 96;
+    
+    flexible_clock unit6p25Mhz (basys_clock, 7, clk_6p25);
+    flexible_clock unit25Mhz (basys_clock, 1, clk_25M);
+    flexible_clock unit20hz (basys_clock, 2499999, clk_20);
+    flexible_clock unit_1Hz (basys_clock,49999998, clk_1Hz);
+
+    
+    menu unit_menu(.game_set(game_set), .pixel_index(pixel_index), .btnR(btnR), .btnL(btnL), .btnC(btnC), 
+    .btnU(btnU), .btnD(btnD), .basys_clock(basys_clock), .oled_data(oled_data_menu), .count(menu_count));
+    soccer_field unit_field (.basys_clock(basys_clock), .reset(reset), 
+    .pixel_index(pixel_index), .oled_data(oled_data_field));
+
+    character_select unit_select (.pixel_index(pixel_index), .basys_clock(basys_clock), .btnC(btnC),
+                     .sw(sw[15:0]), .led(led_select), .oled_data(oled_data_select), 
+                     .P1_character(P1_selected), .P2_character(P2_selected));
+    
+    collision_detection_v3 unit_collision ( .basys_clock(basys_clock), .x1(x1), .y1(y1), .x2(x2), .y2(y2), 
+    .bx(bx), .by(by),.IP1(IP1), .IP2(IP2), .IPB(IDB), .ID1(ID1), .ID2(ID2), .IDB(IDB), .RD1(RD1), 
+    .RD2(RD2), .RDB(RDB), .OP1(RP1), .OP2(RP2), .OPB(RPB), 
+    .collision_detected_p1p2(collision_detected_P1P2), .collision_detected_p1b(collision_detected_P1ball),
+    .collision_detected_p2b(collision_detected_P2ball));
+    
+    assign collision_detected_P1 = (collision_detected_P1P2 || collision_detected_P1ball);
+    assign collision_detected_P2 = (collision_detected_P1P2 || collision_detected_P2ball);
+    assign collision_detected_ball = (collision_detected_P1ball || collision_detected_P2ball);
+    
+    aiming unit_P1 (.sw(sw), .menu_count(menu_count), .scored(scored), .kick_off(kick_off), 
+    .collision_detected(collision_detected_P1), .resultant_d(RD1), .resultant_p(RP1), .x_input(20), 
+    .y_input(32), .r_input(6), .turn(turn_P1), .pixel_index(pixel_index), 
+    .player_selected(P1_selected), .basys_clock(basys_clock), .btnU(btnU), .btnD(btnD), .btnC(btnC),
+    .direction(ID1), .led(led_P1), .power(IP1), .oled_data(oled_data_P1), .x_output(x1), .y_output(y1));
+    
+    aiming unit_P2 (.sw(sw), .menu_count(menu_count), .scored(scored), .kick_off(kick_off), 
+    .collision_detected(collision_detected_P2), .resultant_d(RD2), .resultant_p(RP2), .x_input(75), 
+    .y_input(32), .r_input(6), .turn(turn_P2), .pixel_index(pixel_index), 
+    .player_selected(P2_selected), .basys_clock(basys_clock), .btnU(btnU), .btnD(btnD), .btnC(btnC),
+    .direction(ID2), .led(led_P2), .power(IP2), .oled_data(oled_data_P2), .x_output(x2), .y_output(y2));
+    
+    aiming unit_ball (.sw(sw), .menu_count(menu_count), .scored(scored), .kick_off(kick_off), 
+    .collision_detected(collision_detected_ball), .resultant_d(RDB), .resultant_p(RPB), .x_input(48), 
+    .y_input(32), .r_input(2), .turn(0), .pixel_index(pixel_index), 
+    .player_selected(5), .basys_clock(basys_clock), .btnU(btnU), .btnD(btnD), .btnC(btnC),
+    .direction(IDB), .led(led_ball), .power(IPB), .oled_data(oled_data_ball), .x_output(bx), .y_output(by));
+    
+    goal_detection unit_goal_detection (.basys_clock(basys_clock), .menu_count(menu_count), .bx(bx), .by(by), 
+    .scored(scored), .display(display));
+    
+    score_display unit_score_display (.basys_clock(basys_clock), .menu_count(menu_count), .display(display), .scored(scored),
+    .game_set(game_set), .seg(seg_score), .an(an_score));
+        
+    
+    wire btnC_debounced, btnL_debounced, btnR_debounced;
+    debounce unit_btnC_d (basys_clock, btnC, btnC_debounced);
+    debounce unit_btnL_d (basys_clock, btnL, btnL_debounced);
+    debounce unit_btnR_d (basys_clock, btnR, btnR_debounced);
+    
+    reg [1:0] turn_state = 0;  
+    reg [27:0] delay_counter = 0;  
+    
+    // turn loop
+    always @ (posedge basys_clock) begin
+    
+        if (menu_count == 0) begin
+            kick_off <= 0; // Reset game start
+            turn_state <= 0; // Reset turn state
+            turn_P1 <= 1; // Player 1's turn
+            turn_P2 <= 0;
+        end else if (kick_off == 0) begin
+            if ((P1_selected != P2_selected) && btnL_debounced && btnR_debounced) begin
+                kick_off <= 1; 
+            end
+        end else if (kick_off == 1) begin
+            case (turn_state)
+                0: begin
+                    if (btnC_debounced) begin
+                        turn_state <= 1; 
+                    end
+                end
+                1: begin
+                    if (!btnC_debounced) begin
+                        turn_state <= 2; 
+                        delay_counter <= 0;
+                    end
+                end
+                2: begin
+                    if (delay_counter < 100000000) begin // delay for 1s b4 switching turns
+                        delay_counter <= delay_counter + 1; 
+                    end else begin
+                        if (turn_P1) begin
+                            turn_P1 <= 0;
+                            turn_P2 <= 1;
+                        end else begin
+                            turn_P1 <= 1;
+                            turn_P2 <= 0;
+                        end
+                        turn_state <= 0;
+                    end
+                end
+            endcase
+        end
+        
+        if (kick_off == 0) begin
+            led <= led_select;
+        end else if (kick_off == 1) begin
+            if(turn_P1)
+                led <= led_P1;
+            else
+                led <= led_P2;
+        end
+    end
+
+    // main oled data loop
+    always @(posedge clk_25M) begin
+        if (menu_count < 6 || menu_count > 9 || menu_count == 11 || menu_count == 12) begin
+            oled_data <= oled_data_menu;
+        end else if (menu_count == 6 || menu_count == 7) begin
+            if (oled_data_select != 16'b0000000000000001) begin
+                oled_data <= oled_data_select;
+            end else begin
+                oled_data <= oled_data_menu;
+            end 
+        end else if (kick_off && menu_count == 8) begin      
+            if (oled_data_P1 != 16'b0000000000000001) begin
+                oled_data <= oled_data_P1;
+            end else if (oled_data_P2 != 16'b0000000000000001) begin
+                oled_data <= oled_data_P2;
+            end else if (oled_data_ball != 16'b0000000000000001) begin
+                oled_data <= oled_data_ball;
+            end else begin
+                oled_data <= oled_data_field;
+            end
+        end else if ((kick_off && menu_count == 9 )||(kick_off && menu_count == 10 )) begin
+            oled_data <= oled_data_menu;       
+        end else if (kick_off && menu_count == 13) begin
+            if (oled_data_P1 != 16'b0000000000000001) begin
+                oled_data <= oled_data_P1;
+            end else if (oled_data_P2 != 16'b0000000000000001) begin
+                oled_data <= oled_data_P2;
+            end else if (oled_data_ball != 16'b0000000000000001) begin
+                oled_data <= oled_data_ball;
+            end else if (oled_data_menu != 16'b0000000000000000) begin
+                oled_data <= oled_data_menu;
+            end else begin
+                oled_data <= oled_data_field;
+            end
+        end
+    end
+    
+    // an and seg loop
+    always @ (posedge basys_clock) begin
+        an <= an_score;
+        seg <= seg_score;
+    end
+    
+    Oled_Display unit_Oled(
+        .clk(clk_6p25), 
+        .reset(0), 
+        .frame_begin(frame_begin),
+        .sending_pixels(sending_pixels), 
+        .sample_pixel(sample_pixel),
+        .pixel_index(pixel_index),
+        .pixel_data(oled_data),
+        .cs(JB[0]), 
+        .sdin(JB[1]), 
+        .sclk(JB[3]), 
+        .d_cn(JB[4]), 
+        .resn(JB[5]),
+        .vccen(JB[6]), 
+        .pmoden(JB[7])
+    );
+
+endmodule
+
+
+/*
+reg [31:0] delay_overlap;
+    reg delay_active;
+    reg start_delay;
+    reg overlap = 0;*/
+    
+    /*always @ (posedge clk_1Hz) begin
+        if ((x1 == x2 && y1 == y2) || (x1 == bx && y1 == by) || (x2 == bx && y2 == by)) begin
+            if (!delay_active) begin
+                delay_active <= 1;      // Start the delay
+                delay_overlap <= 0;     // Reset the counter
+            end else if (delay_active) begin
+                if (delay_overlap < 2) begin // Wait for 2 seconds
+                    delay_overlap <= delay_overlap + 1;
+                end else begin
+                    overlap <= 1; // Assert overlap signal
+                end
+            end
+        end else begin
+            delay_active <= 0;      // Deactivate delay
+            delay_overlap <= 0;     // Reset the counter
+            overlap <= 0;           // Deassert overlap signal
+        end
+    end   */
