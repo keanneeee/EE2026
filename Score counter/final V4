@@ -38,11 +38,12 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0]
     soccer_field unit_field(basys_clock,reset, pixel_index, oled_data_field);
     
     character_select unit_select (pixel_index, basys_clock, btnC, sw[15:0], led_select, oled_data_select, P1_selected, P2_selected);
-    collision_detection_test unit_collison(basys_clock,x1, y1, x2, y2,bx, by,ID1, ID2, IDB, IP1, IP2, IPB,6,6,2,RD1, RD2, RDB, RP1, RP2, RPB,collision_detected_P1P2, collision_detected_P1ball, collision_detected_P2ball);
-    
+    //collision_detection_test unit_collison(basys_clock,x1, y1, x2, y2,bx, by,ID1, ID2, IDB, IP1, IP2, IPB,6,6,2,RD1, RD2, RDB, RP1, RP2, RPB,collision_detected_P1P2, collision_detected_P1ball, collision_detected_P2ball);
+    collision_detection_v2 unit_collision(basys_clock,x1, y1, x2, y2, bx, by, IP1, IP2, IPB, ID1, ID2, IDB,  RD1, RD2, RDB, RP1, RP2, RPB,collision_detected_P1P2, collision_detected_P1ball,collision_detected_P2ball );
     assign collision_detected_P1 = (collision_detected_P1P2 || collision_detected_P1ball);
     assign collision_detected_P2 = (collision_detected_P1P2 || collision_detected_P2ball);
     assign collision_detected_ball = (collision_detected_P1ball || collision_detected_P2ball);
+    
     aiming unit_P1(menu_count, scored, kick_off, collision_detected_P1, RD1, RP1, 20, 32, 6, turn_P1, pixel_index, 16'b0000000000000000, P1_selected, basys_clock, btnU, btnD, btnC, ID1, led_P1, IP1, oled_data_P1, x1, y1);
     aiming unit_P2(menu_count, scored, kick_off, collision_detected_P2 , RD2, RP2, 75, 32, 6, turn_P2, pixel_index, 16'b0000000000000000, P2_selected, basys_clock, btnU, btnD, btnC, ID2, led_P2, IP2, oled_data_P2, x2, y2);
     aiming unit_ball(menu_count, scored, kick_off, collision_detected_ball, RDB, RPB, 48, 32, 2, 0, pixel_index, 16'b1111111111111111, 5, basys_clock, btnU, btnD, btnC, IDB, led_ball, IPB, oled_data_ball, bx, by);
@@ -170,6 +171,9 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0]
 
 endmodule
 
+
+
+
 module aiming(input[4:0] menu_count, input scored, input kick_off, input [1:0] collision_detected, input [4:0] resultant_d, input[4:0] resultant_p, input [7:0] x_input, y_input, r_input, input turn, input [12:0] pixel_index, input [15:0] arrow_colour, input [4:0] player_selected, input basys_clock, btnU, btnD, btnC,
 output reg [4:0] direction = 0, output reg [15:0] led, output reg [4:0] power, output reg [15:0] oled_data, output [7:0] x, y);
     
@@ -212,6 +216,7 @@ output reg [4:0] direction = 0, output reg [15:0] led, output reg [4:0] power, o
             else 
                 initial_d <= 8;
         end else if (turn && kick_off) begin
+            led[8] <= 1;
             if (btnU) begin
                 if (initial_d == 15)
                     initial_d <= 0;
@@ -237,6 +242,7 @@ output reg [4:0] direction = 0, output reg [15:0] led, output reg [4:0] power, o
         
         if (moving) begin       
             if (collision_detected) begin
+                led[15] <= 1;
                 initial_d <= resultant_d;
                 power <= resultant_p;
             end else if (!collision_detected && x_centre + radius < 94 && $signed(x_centre - radius) > 1 && $signed(y_centre - radius) > 1 && y_centre + radius < 62) begin
@@ -366,6 +372,7 @@ output reg [4:0] direction = 0, output reg [15:0] led, output reg [4:0] power, o
             end
         end else if (!moving) begin
             if (collision_detected) begin
+                led[15] <= 1;
                 moving <= 1;
                 power <= resultant_p;
                 direction <= resultant_d;
