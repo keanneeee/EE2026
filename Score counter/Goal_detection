@@ -6,32 +6,40 @@ module goal_detection(input basys_clock, input [4:0] menu_count, input [4:0] bx,
     
     reg [1:0] p1_score = 2'b00;
     reg [1:0] p2_score = 2'b00;
+    reg stop = 1'b0; 
 
     always @(posedge basys_clock) begin
-        if (menu_count == 0) begin
+        if (menu_count != 8 && menu_count != 13) begin
             p1_score <= 2'b00;
             p2_score <= 2'b00;
             display <= 4'b0000;
             scored <= 0;
+            stop <= 0;
         end else begin
 
             //player 1 scores
-            if (by >= 20 && by <= 44 && bx + 2 >= 94) begin
+            if ((by >= 20 && by <= 44 && bx + 3 >= 94) && !stop) begin
                 if (p1_score < 2'b11) begin
                     p1_score <= p1_score + 1;
                     scored <= 1;
-                end
+                end 
+                stop <= 1;
             end
             //player 2 scores
-            else if (by >= 20 && by <= 44 && bx - 2 <= 1) begin
+            else if ((by >= 20 && by <= 44 && bx - 3 <= 1) && !stop) begin
                 if (p2_score < 2'b11) begin
-                    p2_score <= p2_score + 1;
+                    p2_score <= p2_score + 1;   
                     scored <= 1;
                 end
+                stop <= 1;
             end else begin
                 scored <= 0;
             end
             
+            
+            if (!((by >= 20 && by <= 44 && (bx + 2 >= 94 || bx - 2 <= 1)))) begin
+                stop <= 0; 
+            end
             //set outputs at end
             display <= {p1_score, p2_score};
             
