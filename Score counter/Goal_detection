@@ -16,16 +16,18 @@ module goal_detection(input basys_clock, input [4:0] menu_count, input [4:0] bx,
         end else begin
 
             //player 1 scores
-            if (by >= 20 && by <= 44 && bx - 2 <= 1) begin
-                if (p1_score < 2'b11)
+            if (by >= 20 && by <= 44 && bx + 2 >= 94) begin
+                if (p1_score < 2'b11) begin
                     p1_score <= p1_score + 1;
-                scored <= 1;
+                    scored <= 1;
+                end
             end
             //player 2 scores
-            else if (by >= 20 && by <= 44 && bx + 2 >= 94) begin
-                if (p2_score < 2'b11)
+            else if (by >= 20 && by <= 44 && bx - 2 <= 1) begin
+                if (p2_score < 2'b11) begin
                     p2_score <= p2_score + 1;
-                scored <= 1;
+                    scored <= 1;
+                end
             end else begin
                 scored <= 0;
             end
