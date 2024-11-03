@@ -42,21 +42,21 @@ module score_display(input basys_clock, input [4:0] menu_count, input [3:0] disp
 
 
     //digits -----------------------------------------------------------------------------------------------------------------------------
-    always @(*) begin
+    always @(posedge basys_clock) begin
         case (current_digit)
-            4'd0: seg = 8'b11000000; //0
-            4'd1: seg = 8'b11111001; //1
-            4'd2: seg = 8'b10100100; //2
-            4'd3: seg = 8'b10110000; //3
-            4'd4 : seg = 8'b11000010; //G
-            4'd5 : seg = 8'b11000000; //O
-            4'd6 : seg = 8'b10001000; //A
-            4'd7 : seg = 8'b11000111; //L
-            4'd8 : seg = 8'b10010010; //S
-            4'd9 : seg = 8'b11001111;//I
-            4'd10 : seg = 8'b11000001;//U
-            4'd11 : seg = 8'b11110111; //_
-            default: seg = 8'b11111111;
+            4'd0: seg <= 8'b11000000; //0
+            4'd1: seg <= 8'b11111001; //1
+            4'd2: seg <= 8'b10100100; //2
+            4'd3: seg <= 8'b10110000; //3
+            4'd4 : seg <= 8'b11000010; //G
+            4'd5 : seg <= 8'b11000000; //O
+            4'd6 : seg <= 8'b10001000; //A
+            4'd7 : seg <= 8'b11000111; //L
+            4'd8 : seg <= 8'b10010010; //S
+            4'd9 : seg <= 8'b11001111;//I
+            4'd10 : seg <= 8'b11000001;//U
+            4'd11 : seg <= 8'b11110111; //_
+            default: seg <= 8'b11111111;
         endcase
     end
 
@@ -100,400 +100,400 @@ module score_display(input basys_clock, input [4:0] menu_count, input [3:0] disp
     end
 
     //an selector display --------------------------------------------------------------------------------------------------------------
-    always @(*)begin
+    always @(posedge basys_clock)begin
     if (goal == 1 && goal_moving == 4'd0)begin //GOAL
         case (anode_selector)
             2'd0: begin
-                an = 4'b1110; //an0
-                current_digit = 4'd11;
+                an <= 4'b1110; //an0
+                current_digit <= 4'd11;
             end
             2'd1: begin
-                an = 4'b1101; //an1
-                current_digit = 4'd11;
+                an <= 4'b1101; //an1
+                current_digit <= 4'd11;
             end
             2'd2: begin
-                an = 4'b1011; //an2
-                current_digit = 4'd11;
+                an <= 4'b1011; //an2
+                current_digit <= 4'd11;
             end
             2'd3: begin
-                an = 4'b0111; //an3
-                current_digit = 4'd11;
+                an <= 4'b0111; //an3
+                current_digit <= 4'd11;
             end
             default: begin
-                an = 4'b1111;
-                current_digit = 4'd0;
+                an <= 4'b1111;
+                current_digit <= 4'd0;
             end
         endcase
     end else if (goal_moving == 4'd1)begin
         case (anode_selector)
         2'd0: begin
-            an = 4'b1110; //an0
-            current_digit = 4'd4;
+            an <= 4'b1110; //an0
+            current_digit <= 4'd4;
         end
         2'd1: begin
-            an = 4'b1101; //an1
-            current_digit = 4'd11;
+            an <= 4'b1101; //an1
+            current_digit <= 4'd11;
         end
         2'd2: begin
-            an = 4'b1011; //an2
-            current_digit = 4'd11;
+            an <= 4'b1011; //an2
+            current_digit <= 4'd11;
         end
         2'd3: begin
-            an = 4'b0111; //an3
-            current_digit = 4'd11;
+            an <= 4'b0111; //an3
+            current_digit <= 4'd11;
         end
         default: begin
-            an = 4'b1111;
-            current_digit = 4'd0;
+            an <= 4'b1111;
+            current_digit <= 4'd0;
         end
     endcase
     end else if (goal_moving == 4'd2)begin
         case (anode_selector)
         2'd0: begin
-            an = 4'b1110; //an0
-            current_digit = 4'd5;
+            an <= 4'b1110; //an0
+            current_digit <= 4'd5;
         end
         2'd1: begin
-            an = 4'b1101; //an1
-            current_digit = 4'd4;
+            an <= 4'b1101; //an1
+            current_digit <= 4'd4;
         end
         2'd2: begin
-            an = 4'b1011; //an2
-            current_digit = 4'd11;
+            an <= 4'b1011; //an2
+            current_digit <= 4'd11;
         end
         2'd3: begin
-            an = 4'b0111; //an3
-            current_digit = 4'd11;
+            an <= 4'b0111; //an3
+            current_digit <= 4'd11;
         end
         default: begin
-            an = 4'b1111;
-            current_digit = 4'd0;
+            an <= 4'b1111;
+            current_digit <= 4'd0;
         end
     endcase
     end else if (goal_moving == 4'd3)begin
         case (anode_selector)
         2'd0: begin
-            an = 4'b1110; //an0
-            current_digit = 4'd6;
+            an <= 4'b1110; //an0
+            current_digit <= 4'd6;
         end
         2'd1: begin
-            an = 4'b1101; //an1
-            current_digit = 4'd5;
+            an <= 4'b1101; //an1
+            current_digit <= 4'd5;
         end
         2'd2: begin
-            an = 4'b1011; //an2
-            current_digit = 4'd4;
+            an <= 4'b1011; //an2
+            current_digit <= 4'd4;
         end
         2'd3: begin
-            an = 4'b0111; //an3
-            current_digit = 4'd11;
+            an <= 4'b0111; //an3
+            current_digit <= 4'd11;
         end
         default: begin
-            an = 4'b1111;
-            current_digit = 4'd0;
+            an <= 4'b1111;
+            current_digit <= 4'd0;
         end
     endcase
     end else if (goal_moving == 4'd4)begin
         case (anode_selector)
         2'd0: begin
-            an = 4'b1110; //an0
-            current_digit = 4'd7;
+            an <= 4'b1110; //an0
+            current_digit <= 4'd7;
         end
         2'd1: begin
-            an = 4'b1101; //an1
-            current_digit = 4'd6;
+            an <= 4'b1101; //an1
+            current_digit <= 4'd6;
         end
         2'd2: begin
-            an = 4'b1011; //an2
-            current_digit = 4'd5;
+            an <= 4'b1011; //an2
+            current_digit <= 4'd5;
         end
         2'd3: begin
-            an = 4'b0111; //an3
-            current_digit = 4'd4;
+            an <= 4'b0111; //an3
+            current_digit <= 4'd4;
         end
         default: begin
-            an = 4'b1111;
-            current_digit = 4'd0;
+            an <= 4'b1111;
+            current_digit <= 4'd0;
         end
     endcase
     end else if (goal_moving == 4'd5)begin
         case (anode_selector)
         2'd0: begin
-            an = 4'b1110; //an0
-            current_digit = 4'd7;
+            an <= 4'b1110; //an0
+            current_digit <= 4'd7;
         end
         2'd1: begin
-            an = 4'b1101; //an1
-            current_digit = 4'd7;
+            an <= 4'b1101; //an1
+            current_digit <= 4'd7;
         end
         2'd2: begin
-            an = 4'b1011; //an2
-            current_digit = 4'd6;
+            an <= 4'b1011; //an2
+            current_digit <= 4'd6;
         end
         2'd3: begin
-            an = 4'b0111; //an3
-            current_digit = 4'd5;
+            an <= 4'b0111; //an3
+            current_digit <= 4'd5;
         end
         default: begin
-            an = 4'b1111;
-            current_digit = 4'd0;
+            an <= 4'b1111;
+            current_digit <= 4'd0;
         end
     endcase
     end else if (goal_moving == 4'd6)begin
         case (anode_selector)
         2'd0: begin
-            an = 4'b1110; //an0
-            current_digit = 4'd7;
+            an <= 4'b1110; //an0
+            current_digit <= 4'd7;
         end
         2'd1: begin
-            an = 4'b1101; //an1
-            current_digit = 4'd7;
+            an <= 4'b1101; //an1
+            current_digit <= 4'd7;
         end
         2'd2: begin
-            an = 4'b1011; //an2
-            current_digit = 4'd7;
+            an <= 4'b1011; //an2
+            current_digit <= 4'd7;
         end
         2'd3: begin
-            an = 4'b0111; //an3
-            current_digit = 4'd6;
+            an <= 4'b0111; //an3
+            current_digit <= 4'd6;
         end
         default: begin
-            an = 4'b1111;
-            current_digit = 4'd0;
+            an <= 4'b1111;
+            current_digit <= 4'd0;
         end
     endcase
     end else if (goal_moving == 4'd7)begin
         case (anode_selector)
         2'd0: begin
-            an = 4'b1110; //an0
-            current_digit = 4'd7;
+            an <= 4'b1110; //an0
+            current_digit <= 4'd7;
         end
         2'd1: begin
-            an = 4'b1101; //an1
-            current_digit = 4'd7;
+            an <= 4'b1101; //an1
+            current_digit <= 4'd7;
         end
         2'd2: begin
-            an = 4'b1011; //an2
-            current_digit = 4'd7;
+            an <= 4'b1011; //an2
+            current_digit <= 4'd7;
         end
         2'd3: begin
-            an = 4'b0111; //an3
-            current_digit = 4'd7;
+            an <= 4'b0111; //an3
+            current_digit <= 4'd7;
         end
         default: begin
-            an = 4'b1111;
-            current_digit = 4'd0;
+            an <= 4'b1111;
+            current_digit <= 4'd0;
         end
     endcase
     end else if (goal_moving == 4'd8)begin
         case (anode_selector)
         2'd0: begin
-            an = 4'b1110; //an0
-            current_digit = 4'd7;
+            an <= 4'b1110; //an0
+            current_digit <= 4'd7;
         end
         2'd1: begin
-            an = 4'b1101; //an1
-            current_digit = 4'd7;
+            an <= 4'b1101; //an1
+            current_digit <= 4'd7;
         end
         2'd2: begin
-            an = 4'b1011; //an2
-            current_digit = 4'd7;
+            an <= 4'b1011; //an2
+            current_digit <= 4'd7;
         end
         2'd3: begin
-            an = 4'b0111; //an3
-            current_digit = 4'd7;
+            an <= 4'b0111; //an3
+            current_digit <= 4'd7;
         end
         default: begin
-            an = 4'b1111;
-            current_digit = 4'd0;
+            an <= 4'b1111;
+            current_digit <= 4'd0;
         end
     endcase
     end else if (goal_moving == 4'd9)begin
         case (anode_selector)
         2'd0: begin
-            an = 4'b1110; //an0
-            current_digit = 4'd8;
+            an <= 4'b1110; //an0
+            current_digit <= 4'd8;
         end
         2'd1: begin
-            an = 4'b1101; //an1
-            current_digit = 4'd7;
+            an <= 4'b1101; //an1
+            current_digit <= 4'd7;
         end
         2'd2: begin
-            an = 4'b1011; //an2
-            current_digit = 4'd7;
+            an <= 4'b1011; //an2
+            current_digit <= 4'd7;
         end
         2'd3: begin
-            an = 4'b0111; //an3
-            current_digit = 4'd7;
+            an <= 4'b0111; //an3
+            current_digit <= 4'd7;
         end
         default: begin
-            an = 4'b1111;
-            current_digit = 4'd0;
+            an <= 4'b1111;
+            current_digit <= 4'd0;
         end
     endcase
     end else if (goal_moving == 4'd10)begin
         case (anode_selector)
         2'd0: begin
-            an = 4'b1110; //an0
-            current_digit = 4'd9;
+            an <= 4'b1110; //an0
+            current_digit <= 4'd9;
         end
         2'd1: begin
-            an = 4'b1101; //an1
-            current_digit = 4'd8;
+            an <= 4'b1101; //an1
+            current_digit <= 4'd8;
         end
         2'd2: begin
-            an = 4'b1011; //an2
-            current_digit = 4'd7;
+            an <= 4'b1011; //an2
+            current_digit <= 4'd7;
         end
         2'd3: begin
-            an = 4'b0111; //an3
-            current_digit = 4'd7;
+            an <= 4'b0111; //an3
+            current_digit <= 4'd7;
         end
         default: begin
-            an = 4'b1111;
-            current_digit = 4'd0;
+            an <= 4'b1111;
+            current_digit <= 4'd0;
         end
     endcase
     end else if (goal_moving == 4'd11)begin
         case (anode_selector)
         2'd0: begin
-            an = 4'b1110; //an0
-            current_digit = 4'd10;
+            an <= 4'b1110; //an0
+            current_digit <= 4'd10;
         end
         2'd1: begin
-            an = 4'b1101; //an1
-            current_digit = 4'd9;
+            an <= 4'b1101; //an1
+            current_digit <= 4'd9;
         end
         2'd2: begin
-            an = 4'b1011; //an2
-            current_digit = 4'd8;
+            an <= 4'b1011; //an2
+            current_digit <= 4'd8;
         end
         2'd3: begin
-            an = 4'b0111; //an3
-            current_digit = 4'd7;
+            an <= 4'b0111; //an3
+            current_digit <= 4'd7;
         end
         default: begin
-            an = 4'b1111;
-            current_digit = 4'd0;
+            an <= 4'b1111;
+            current_digit <= 4'd0;
         end
     endcase
     end else if (goal_moving == 4'd12)begin
         case (anode_selector)
         2'd0: begin
-            an = 4'b1110; //an0
-            current_digit = 4'd10;
+            an <= 4'b1110; //an0
+            current_digit <= 4'd10;
         end
         2'd1: begin
-            an = 4'b1101; //an1
-            current_digit = 4'd10;
+            an <= 4'b1101; //an1
+            current_digit <= 4'd10;
         end
         2'd2: begin
-            an = 4'b1011; //an2
-            current_digit = 4'd9;
+            an <= 4'b1011; //an2
+            current_digit <= 4'd9;
         end
         2'd3: begin
-            an = 4'b0111; //an3
-            current_digit = 4'd8;
+            an <= 4'b0111; //an3
+            current_digit <= 4'd8;
         end
         default: begin
-            an = 4'b1111;
-            current_digit = 4'd0;
+            an <= 4'b1111;
+            current_digit <= 4'd0;
         end
     endcase
     end else if (goal_moving == 4'd13)begin
         case (anode_selector)
         2'd0: begin
-            an = 4'b1110; //an0
-            current_digit = 4'd10;
+            an <= 4'b1110; //an0
+            current_digit <= 4'd10;
         end
         2'd1: begin
-            an = 4'b1101; //an1
-            current_digit = 4'd10;
+            an <= 4'b1101; //an1
+            current_digit <= 4'd10;
         end
         2'd2: begin
-            an = 4'b1011; //an2
-            current_digit = 4'd10;
+            an <= 4'b1011; //an2
+            current_digit <= 4'd10;
         end
         2'd3: begin
-            an = 4'b0111; //an3
-            current_digit = 4'd9;
+            an <= 4'b0111; //an3
+            current_digit <= 4'd9;
         end
         default: begin
-            an = 4'b1111;
-            current_digit = 4'd0;
+            an <= 4'b1111;
+            current_digit <= 4'd0;
         end
     endcase
     end else if (goal_moving == 4'd14)begin
         case (anode_selector)
         2'd0: begin
-            an = 4'b1110; //an0
-            current_digit = 4'd10;
+            an <= 4'b1110; //an0
+            current_digit <= 4'd10;
         end
         2'd1: begin
-            an = 4'b1101; //an1
-            current_digit = 4'd10;
+            an <= 4'b1101; //an1
+            current_digit <= 4'd10;
         end
         2'd2: begin
-            an = 4'b1011; //an2
-            current_digit = 4'd10;
+            an <= 4'b1011; //an2
+            current_digit <= 4'd10;
         end
         2'd3: begin
-            an = 4'b0111; //an3
-            current_digit = 4'd10;
+            an <= 4'b0111; //an3
+            current_digit <= 4'd10;
         end
         default: begin
-            an = 4'b1111;
-            current_digit = 4'd0;
+            an <= 4'b1111;
+            current_digit <= 4'd0;
         end
     endcase
     end else if (goal_moving == 4'd15)begin
         case (anode_selector)
         2'd0: begin
-            an = 4'b1110; //an0
-            current_digit = 4'd10;
+            an <= 4'b1110; //an0
+            current_digit <= 4'd10;
         end
         2'd1: begin
-            an = 4'b1101; //an1
-            current_digit = 4'd10;
+            an <= 4'b1101; //an1
+            current_digit <= 4'd10;
         end
         2'd2: begin
-            an = 4'b1011; //an2
-            current_digit = 4'd10;
+            an <= 4'b1011; //an2
+            current_digit <= 4'd10;
         end
         2'd3: begin
-            an = 4'b0111; //an3
-            current_digit = 4'd10;
+            an <= 4'b0111; //an3
+            current_digit <= 4'd10;
         end
         default: begin
-            an = 4'b1111;
-            current_digit = 4'd0;
+            an <= 4'b1111;
+            current_digit <= 4'd0;
         end
     endcase
     end else begin
     //SCORES: 0-1, 0-2, 0-3, 1-0, 2-0, 3-0 ---------------------------------------------------------------------------------
     if (!menu_count || display == 4'b0000 || goal == 0)begin //p1: 0, p2: 0, 0-0
-        next_game_set = 3'b000;
-        start_delay = 1;
+        next_game_set <= 3'b000;
+        start_delay <= 1;
         case (anode_selector)
             2'd0: begin
-                an = 4'b1110; //an0
-                current_digit = 4'd0;
+                an <= 4'b1110; //an0
+                current_digit <= 4'd0;
             end
             2'd1: begin
-                an = 4'b1101; //an1
-                current_digit = 4'd0;
+                an <= 4'b1101; //an1
+                current_digit <= 4'd0;
             end
             2'd2: begin
-                an = 4'b1011; //an2
-                current_digit = 4'd0;
+                an <= 4'b1011; //an2
+                current_digit <= 4'd0;
             end
             2'd3: begin
-                an = 4'b0111; //an3
-                current_digit = 4'd0;
+                an <= 4'b0111; //an3
+                current_digit <= 4'd0;
             end
             default: begin
-                an = 4'b1111;
-                current_digit = 4'd0;
+                an <= 4'b1111;
+                current_digit <= 4'd0;
             end
         endcase
     end
@@ -501,24 +501,24 @@ module score_display(input basys_clock, input [4:0] menu_count, input [3:0] disp
     if (display == 4'b0100)begin //p1: 1, p2: 0, 1-0
         case (anode_selector)
             2'd0: begin
-                an = 4'b1110; //an0
-                current_digit = 4'd0;
+                an <= 4'b1110; //an0
+                current_digit <= 4'd0;
             end
             2'd1: begin
-                an = 4'b1101; //an1
-                current_digit = 4'd0;
+                an <= 4'b1101; //an1
+                current_digit <= 4'd0;
             end
             2'd2: begin
-                an = 4'b1011; //an2
-                current_digit = 4'd1;
+                an <= 4'b1011; //an2
+                current_digit <= 4'd1;
             end
             2'd3: begin
-                an = 4'b0111; //an3
-                current_digit = 4'd0;
+                an <= 4'b0111; //an3
+                current_digit <= 4'd0;
             end
             default: begin
-                an = 4'b1111;
-                current_digit = 4'd0;
+                an <= 4'b1111;
+                current_digit <= 4'd0;
             end
         endcase
     end
@@ -526,51 +526,51 @@ module score_display(input basys_clock, input [4:0] menu_count, input [3:0] disp
     if (display == 4'b1000)begin //p1: 2, p2: 0, 2-0
         case (anode_selector)
             2'd0: begin
-                an = 4'b1110; //an0
-                current_digit = 4'd0;
+                an <= 4'b1110; //an0
+                current_digit <= 4'd0;
             end
             2'd1: begin
-                an = 4'b1101; //an1
-                current_digit = 4'd0;
+                an <= 4'b1101; //an1
+                current_digit <= 4'd0;
             end
             2'd2: begin
-                an = 4'b1011; //an2
-                current_digit = 4'd2;
+                an <= 4'b1011; //an2
+                current_digit <= 4'd2;
             end
             2'd3: begin
-                an = 4'b0111; //an3
-                current_digit = 4'd0;
+                an <= 4'b0111; //an3
+                current_digit <= 4'd0;
             end
             default: begin
-                an = 4'b1111;
-                current_digit = 4'd0;
+                an <= 4'b1111;
+                current_digit <= 4'd0;
             end
         endcase
     end
     
     if (display == 4'b1100)begin //p1: 3, p2: 0, 3-0
-        next_game_set = 1; //send out p1 wins
-        start_delay = 1;
+        next_game_set <= 1; //send out p1 wins
+        start_delay <= 1;
         case (anode_selector)
             2'd0: begin
-                an = 4'b1110; //an0
-                current_digit = 4'd0;
+                an <= 4'b1110; //an0
+                current_digit <= 4'd0;
             end
             2'd1: begin
-                an = 4'b1101; //an1
-                current_digit = 4'd0;
+                an <= 4'b1101; //an1
+                current_digit <= 4'd0;
             end
             2'd2: begin
-                an = 4'b1011; //an2
-                current_digit = 4'd3;
+                an <= 4'b1011; //an2
+                current_digit <= 4'd3;
             end
             2'd3: begin
-                an = 4'b0111; //an3
-                current_digit = 4'd0;
+                an <= 4'b0111; //an3
+                current_digit <= 4'd0;
             end
             default: begin
-                an = 4'b1111;
-                current_digit = 4'd0;
+                an <= 4'b1111;
+                current_digit <= 4'd0;
             end
         endcase
     end
@@ -578,24 +578,24 @@ module score_display(input basys_clock, input [4:0] menu_count, input [3:0] disp
     if (display == 4'b0001)begin //p1: 0, p2: 1, 0-1
         case (anode_selector)
             2'd0: begin
-                an = 4'b1110; //an0
-                current_digit = 4'd1;
+                an <= 4'b1110; //an0
+                current_digit <= 4'd1;
             end
             2'd1: begin
-                an = 4'b1101; //an1
-                current_digit = 4'd0;
+                an <= 4'b1101; //an1
+                current_digit <= 4'd0;
             end
             2'd2: begin
-                an = 4'b1011; //an2
-                current_digit = 4'd0;
+                an <= 4'b1011; //an2
+                current_digit <= 4'd0;
             end
             2'd3: begin
-                an = 4'b0111; //an3
-                current_digit = 4'd0;
+                an <= 4'b0111; //an3
+                current_digit <= 4'd0;
             end
             default: begin
-                an = 4'b1111;
-                current_digit = 4'd0;
+                an <= 4'b1111;
+                current_digit <= 4'd0;
             end
         endcase
     end
@@ -603,51 +603,51 @@ module score_display(input basys_clock, input [4:0] menu_count, input [3:0] disp
     if (display == 4'b0010)begin //p1: 0, p2: 2, 0-2
         case (anode_selector)
             2'd0: begin
-                an = 4'b1110; //an0
-                current_digit = 4'd2;
+                an <= 4'b1110; //an0
+                current_digit <= 4'd2;
             end
             2'd1: begin
-                an = 4'b1101; //an1
-                current_digit = 4'd0;
+                an <= 4'b1101; //an1
+                current_digit <= 4'd0;
             end
             2'd2: begin
-                an = 4'b1011; //an2
-                current_digit = 4'd0;
+                an <= 4'b1011; //an2
+                current_digit <= 4'd0;
             end
             2'd3: begin
-                an = 4'b0111; //an3
-                current_digit = 4'd0;
+                an <= 4'b0111; //an3
+                current_digit <= 4'd0;
             end
             default: begin
-                an = 4'b1111;
-                current_digit = 4'd0;
+                an <= 4'b1111;
+                current_digit <= 4'd0;
             end
         endcase
     end
     
     if (display == 4'b0011)begin //p1: 0, p2: 3, 0-3
-        next_game_set = 2; //send out p2 wins
-        start_delay = 1;
+        next_game_set <= 2; //send out p2 wins
+        start_delay <= 1;
         case (anode_selector)
             2'd0: begin
-                an = 4'b1110; //an0
-                current_digit = 4'd3;
+                an <= 4'b1110; //an0
+                current_digit <= 4'd3;
             end
             2'd1: begin
-                an = 4'b1101; //an1
-                current_digit = 4'd0;
+                an <= 4'b1101; //an1
+                current_digit <= 4'd0;
             end
             2'd2: begin
-                an = 4'b1011; //an2
-                current_digit = 4'd0;
+                an <= 4'b1011; //an2
+                current_digit <= 4'd0;
             end
             2'd3: begin
-                an = 4'b0111; //an3
-                current_digit = 4'd0;
+                an <= 4'b0111; //an3
+                current_digit <= 4'd0;
             end
             default: begin
-                an = 4'b1111;
-                current_digit = 4'd0;
+                an <= 4'b1111;
+                current_digit <= 4'd0;
             end
         endcase
     end
@@ -656,53 +656,53 @@ module score_display(input basys_clock, input [4:0] menu_count, input [3:0] disp
     if (display == 4'b0101)begin //p1: 1, p2: 1, 1-1
         case (anode_selector)
             2'd0: begin
-                an = 4'b1110; //an0
-                current_digit = 4'd1;
+                an <= 4'b1110; //an0
+                current_digit <= 4'd1;
             end
             2'd1: begin
-                an = 4'b1101; //an1
-                current_digit = 4'd0;
+                an <= 4'b1101; //an1
+                current_digit <= 4'd0;
             end
             2'd2: begin
-                an = 4'b1011; //an2
-                current_digit = 4'd1;
+                an <= 4'b1011; //an2
+                current_digit <= 4'd1;
             end
             2'd3: begin
-                an = 4'b0111; //an3
-                current_digit = 4'd0;
+                an <= 4'b0111; //an3
+                current_digit <= 4'd0;
             end
             default: begin
-                an = 4'b1111;
-                current_digit = 4'd0;
+                an <= 4'b1111;
+                current_digit <= 4'd0;
             end
         endcase
     end
     
     if (display == 4'b1010)begin //p1: 2, p2: 2, 2-2
-        next_game_set = 3; // Showdown mode
-        start_delay = 1;
+        next_game_set <= 3; // Showdown mode
+        start_delay <= 1;
         
         
         case (anode_selector)
             2'd0: begin
-                an = 4'b1110; //an0
-                current_digit = 4'd2;
+                an <= 4'b1110; //an0
+                current_digit <= 4'd2;
             end
             2'd1: begin
-                an = 4'b1101; //an1
-                current_digit = 4'd0;
+                an <= 4'b1101; //an1
+                current_digit <= 4'd0;
             end
             2'd2: begin
-                an = 4'b1011; //an2
-                current_digit = 4'd2;
+                an <= 4'b1011; //an2
+                current_digit <= 4'd2;
             end
             2'd3: begin
-                an = 4'b0111; //an3
-                current_digit = 4'd0;
+                an <= 4'b0111; //an3
+                current_digit <= 4'd0;
             end
             default: begin
-                an = 4'b1111;
-                current_digit = 4'd0;
+                an <= 4'b1111;
+                current_digit <= 4'd0;
             end
         endcase
     end
@@ -712,51 +712,51 @@ module score_display(input basys_clock, input [4:0] menu_count, input [3:0] disp
     if (display == 4'b0110)begin //p1: 1, p2: 2, 1-2
         case (anode_selector)
             2'd0: begin
-                an = 4'b1110; //an0
-                current_digit = 4'd2;
+                an <= 4'b1110; //an0
+                current_digit <= 4'd2;
             end
             2'd1: begin
-                an = 4'b1101; //an1
-                current_digit = 4'd0;
+                an <= 4'b1101; //an1
+                current_digit <= 4'd0;
             end
             2'd2: begin
-                an = 4'b1011; //an2
-                current_digit = 4'd1;
+                an <= 4'b1011; //an2
+                current_digit <= 4'd1;
             end
             2'd3: begin
-                an = 4'b0111; //an3
-                current_digit = 4'd0;
+                an <= 4'b0111; //an3
+                current_digit <= 4'd0;
             end
             default: begin
-                an = 4'b1111;
-                current_digit = 4'd0;
+                an <= 4'b1111;
+                current_digit <= 4'd0;
             end
         endcase
     end
     
     if (display == 4'b0111)begin //p1: 1, p2: 3, 1-3
-        next_game_set = 2; //sends out p2 wins
-        start_delay = 1;
+        next_game_set <= 2; //sends out p2 wins
+        start_delay <= 1;
         case (anode_selector)
             2'd0: begin
-                an = 4'b1110; //an0
-                current_digit = 4'd3;
+                an <= 4'b1110; //an0
+                current_digit <= 4'd3;
             end
             2'd1: begin
-                an = 4'b1101; //an1
-                current_digit = 4'd0;
+                an <= 4'b1101; //an1
+                current_digit <= 4'd0;
             end
             2'd2: begin
-                an = 4'b1011; //an2
-                current_digit = 4'd1;
+                an <= 4'b1011; //an2
+                current_digit <= 4'd1;
             end
             2'd3: begin
-                an = 4'b0111; //an3
-                current_digit = 4'd0;
+                an <= 4'b0111; //an3
+                current_digit <= 4'd0;
             end
             default: begin
-                an = 4'b1111;
-                current_digit = 4'd0;
+                an <= 4'b1111;
+                current_digit <= 4'd0;
             end
         endcase
     end
@@ -764,51 +764,51 @@ module score_display(input basys_clock, input [4:0] menu_count, input [3:0] disp
     if (display == 4'b1001)begin //p1: 2, p2: 1, 2-1
         case (anode_selector)
             2'd0: begin
-                an = 4'b1110; //an0
-                current_digit = 4'd1;
+                an <= 4'b1110; //an0
+                current_digit <= 4'd1;
             end
             2'd1: begin
-                an = 4'b1101; //an1
-                current_digit = 4'd0;
+                an <= 4'b1101; //an1
+                current_digit <= 4'd0;
             end
             2'd2: begin
-                an = 4'b1011; //an2
-                current_digit = 4'd2;
+                an <= 4'b1011; //an2
+                current_digit <= 4'd2;
             end
             2'd3: begin
-                an = 4'b0111; //an3
-                current_digit = 4'd0;
+                an <= 4'b0111; //an3
+                current_digit <= 4'd0;
             end
             default: begin
-                an = 4'b1111;
-                current_digit = 4'd0;
+                an <= 4'b1111;
+                current_digit <= 4'd0;
             end
         endcase
     end
     
     if (display == 4'b1101)begin //p1: 3, p2: 1, 3-1
-        next_game_set = 1; //sends out p1 wins
-        start_delay = 1;
+        next_game_set <= 1; //sends out p1 wins
+        start_delay <= 1;
         case (anode_selector)
             2'd0: begin
-                an = 4'b1110; //an0
-                current_digit = 4'd1;
+                an <= 4'b1110; //an0
+                current_digit <= 4'd1;
             end
             2'd1: begin
-                an = 4'b1101; //an1
-                current_digit = 4'd0;
+                an <= 4'b1101; //an1
+                current_digit <= 4'd0;
             end
             2'd2: begin
-                an = 4'b1011; //an2
-                current_digit = 4'd3;
+                an <= 4'b1011; //an2
+                current_digit <= 4'd3;
             end
             2'd3: begin
-                an = 4'b0111; //an3
-                current_digit = 4'd0;
+                an <= 4'b0111; //an3
+                current_digit <= 4'd0;
             end
             default: begin
-                an = 4'b1111;
-                current_digit = 4'd0;
+                an <= 4'b1111;
+                current_digit <= 4'd0;
             end
         endcase
     end
@@ -818,52 +818,52 @@ module score_display(input basys_clock, input [4:0] menu_count, input [3:0] disp
     if (display == 4'b1001)begin //p1: 2, p2: 1, 2-1
         case (anode_selector)
             2'd0: begin
-                an = 4'b1110; //an0
-                current_digit = 4'd1;
+                an <= 4'b1110; //an0
+                current_digit <= 4'd1;
             end
             2'd1: begin
-                an = 4'b1101; //an1
-                current_digit = 4'd0;
+                an <= 4'b1101; //an1
+                current_digit <= 4'd0;
             end
             2'd2: begin
-                an = 4'b1011; //an2
-                current_digit = 4'd2;
+                an <= 4'b1011; //an2
+                current_digit <= 4'd2;
             end
             2'd3: begin
-                an = 4'b0111; //an3
-                current_digit = 4'd0;
+                an <= 4'b0111; //an3
+                current_digit <= 4'd0;
             end
             default: begin
-                an = 4'b1111;
-                current_digit = 4'd0;
+                an <= 4'b1111;
+                current_digit <= 4'd0;
             end
         endcase
     end
     
     if (display == 4'b1011)begin //p1: 2, p2: 3, 2-3
-        next_game_set = 2; //sends out p2 wins
-        start_delay = 1;
+        next_game_set <= 2; //sends out p2 wins
+        start_delay <= 1;
         // showdown <= 0; //reset showdown
         case (anode_selector)
             2'd0: begin
-                an = 4'b1110; //an0
-                current_digit = 4'd3;
+                an <= 4'b1110; //an0
+                current_digit <= 4'd3;
             end
             2'd1: begin
-                an = 4'b1101; //an1
-                current_digit = 4'd0;
+                an <= 4'b1101; //an1
+                current_digit <= 4'd0;
             end
             2'd2: begin
-                an = 4'b1011; //an2
-                current_digit = 4'd2;
+                an <= 4'b1011; //an2
+                current_digit <= 4'd2;
             end
             2'd3: begin
-                an = 4'b0111; //an3
-                current_digit = 4'd0;
+                an <= 4'b0111; //an3
+                current_digit <= 4'd0;
             end
             default: begin
-                an = 4'b1111;
-                current_digit = 4'd0;
+                an <= 4'b1111;
+                current_digit <= 4'd0;
             end
         endcase
     end
@@ -871,52 +871,52 @@ module score_display(input basys_clock, input [4:0] menu_count, input [3:0] disp
     if (display == 4'b0110)begin //p1: 1, p2: 2, 1-2
         case (anode_selector)
             2'd0: begin
-                an = 4'b1110; //an0
-                current_digit = 4'd2;
+                an <= 4'b1110; //an0
+                current_digit <= 4'd2;
             end
             2'd1: begin
-                an = 4'b1101; //an1
-                current_digit = 4'd0;
+                an <= 4'b1101; //an1
+                current_digit <= 4'd0;
             end
             2'd2: begin
-                an = 4'b1011; //an2
-                current_digit = 4'd1;
+                an <= 4'b1011; //an2
+                current_digit <= 4'd1;
             end
             2'd3: begin
-                an = 4'b0111; //an3
-                current_digit = 4'd0;
+                an <= 4'b0111; //an3
+                current_digit <= 4'd0;
             end
             default: begin
-                an = 4'b1111;
-                current_digit = 4'd0;
+                an <= 4'b1111;
+                current_digit <= 4'd0;
             end
         endcase
     end
     
     if (display == 4'b1110)begin //p1: 3, p2: 2, 3-2
-        next_game_set = 1; //sends out p1 wins
-        start_delay = 1;
+        next_game_set <= 1; //sends out p1 wins
+        start_delay <= 1;
         //showdown <= 0; //reset showdown
         case (anode_selector)
             2'd0: begin
-                an = 4'b1110; //an0
-                current_digit = 4'd2;
+                an <= 4'b1110; //an0
+                current_digit <= 4'd2;
             end
             2'd1: begin
-                an = 4'b1101; //an1
-                current_digit = 4'd0;
+                an <= 4'b1101; //an1
+                current_digit <= 4'd0;
             end
             2'd2: begin
-                an = 4'b1011; //an2
-                current_digit = 4'd3;
+                an <= 4'b1011; //an2
+                current_digit <= 4'd3;
             end
             2'd3: begin
-                an = 4'b0111; //an3
-                current_digit = 4'd0;
+                an <= 4'b0111; //an3
+                current_digit <= 4'd0;
             end
             default: begin
-                an = 4'b1111;
-                current_digit = 4'd0;
+                an <= 4'b1111;
+                current_digit <= 4'd0;
             end
         endcase
     end
