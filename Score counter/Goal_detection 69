@@ -7,8 +7,9 @@ module goal_detection(input basys_clock, input [4:0] menu_count, input [4:0] bx,
     reg [1:0] p1_score = 2'b00;
     reg [1:0] p2_score = 2'b00;
     reg stop = 1'b0; 
-
-    always @(posedge basys_clock) begin
+    wire clk_20;
+    flexible_clock unit20hz (basys_clock, 2499999, clk_20); 
+    always @(posedge clk_20) begin
         if (menu_count != 8 && menu_count != 13) begin
             p1_score <= 2'b00;
             p2_score <= 2'b00;
