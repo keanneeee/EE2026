@@ -1,7 +1,3 @@
-`timescale 1ns / 1ps
-
-
-
 module collision_detection_v3( // this is my last straw
      input basys_clock, 
      input [7:0] x1, y1, x2, y2, bx, by, //p1 p2 and ball coordinates 
@@ -131,18 +127,18 @@ always @(posedge basys_clock) begin
     collision_detected_p1p2 <= 0;
   end
   
-  if (proximityx_p1b <= 8 && proximityy_p1b <= 8) begin
+  if (proximityx_p1b <= 10 && proximityy_p1b <= 10) begin
     collision_detected_p1b <= 1;
   end
   else begin
     collision_detected_p1b <= 0;
   end
   
-  if (proximityx_p2b <= 8 && proximityy_p2b <= 8) begin
+  if (proximityx_p2b <= 10 && proximityy_p2b <= 10) begin
     collision_detected_p2b <= 1;
   end
   else begin
-    collision_detected_p2b <= 1;
+    collision_detected_p2b <= 0;
   end
 end
 
@@ -150,11 +146,11 @@ end
   if (collision_detected_p1p2) begin
     if (IP1 == 0 && IP2 != 0) begin
         OP1 <= IP2;
-        OP2 <= 0;
+        OP2 <= 3;
         RD1 <= (POC1 + 8) % 16;
     end
     if (IP1 != 0 && IP2 == 0) begin
-      OP1 <= 0;
+      OP1 <= 3;
       OP2 <= IP1;
       RD2 <= (POC2 +8) % 16;
     end
@@ -167,14 +163,14 @@ end
   end   
   else if (collision_detected_p1b) begin
     if (IP1 != 0 && IPB == 0) begin
-      OP1 <= 0;
+      OP1 <= 3;
       OPB <= IP1;
       RDB <= (POC3 + 8) % 16;
     end
     else if (IP1 == 0 && IPB != 0) begin
       OP1 <= IPB;
-      OPB <= 0;
-      RD1 <= (POC4 +8) %16;
+      OPB <= 3;
+      RD1 <= (POC4 + 8) %16;
     end
     else if (IP1 != 0 && IPB != 0) begin
       OP1 <= IPB;
@@ -185,13 +181,13 @@ end
   end
   else if (collision_detected_p2b) begin
     if (IP2 != 0 && IPB == 0) begin
-        OP2 <= 0;
+        OP2 <= 3;
         OPB <= IP2;
         RDB <= (POC5 + 8) % 16;
     end
     if (IP2 == 0 && IPB != 0) begin
         OP2 <= IPB;
-        OPB <= 0;
+        OPB <= 3;
         RD2 <= (POC6 + 8) % 16;
     end
     if (IP2 != 0 && IPB != 0) begin
