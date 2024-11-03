@@ -1,0 +1,248 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 03.11.2024 12:07:50
+// Design Name: 
+// Module Name: collision_detection_v3
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module collision_detection_v3( // this is my last straw
+     input basys_clock, 
+     input [7:0] x1, y1, x2, y2, bx, by, //p1 p2 and ball coordinates 
+     input [4:0] IP1, IP2, IPB,
+     input [4:0] ID1, ID2, IDB, 
+     output reg [4:0] RD1, RD2, RDB, 
+     output reg [4:0] OP1, OP2, OPB,
+     output reg collision_detected_p1p2,
+     output reg collision_detected_p1b,
+     output reg collision_detected_p2b 
+    );
+    wire clk_25M;
+    wire signed [10:0] dx, dy, bx1, by1, bx2, by2;
+    wire signed [10:0] dx2, dy2, b1x, b1y, b2x, b2y;
+    reg [5:0] POC1, POC2, POC3, POC4, POC5, POC6; 
+    reg [5:0] angle, angle2, angle3, angle4, angle5, angle6;
+    flexible_clock unit25MHZ (basys_clock, 1, clk_25M);
+    
+    assign dx2 = x1 - x2;
+    assign dy2 = y1 - y2;
+    assign dx = x2 - x1;
+    assign dy = y2 - y1;
+    assign bx1 = bx - x1;
+    assign by1 = by - y1;
+    assign b1x = x1 - bx;
+    assign b1y = y1 - by;
+    assign bx2 = x2 - bx;
+    assign by2 = y2 - by;
+    assign b2x = bx - x2;
+    assign b2y = by - y2;
+    
+always @(posedge basys_clock) begin
+      if(dx == 0) begin
+        angle <= (dy > 0) ? 4 : 12;//north or south
+        end
+        else if (dy == 0) begin
+          angle <= (dx > 0) ? 0 : 8;
+        end
+        else begin
+          if (dx > 0 && dy > 0) begin angle <= 2; end
+          else if (dx < 0 && dy > 0) begin angle <= 6; end
+          else if (dx < 0 && dy < 0) begin angle <= 10; end
+          else if (dx > 0 && dy < 0) begin angle <= 14; end
+        end
+        POC1 <= angle;
+        if(dx2 == 0) begin // point of contact of player 2 on player 1
+            angle2 <= (dy2 > 0) ? 4 : 12;//north or south
+          end
+          else if (dy2 == 0) begin
+            angle2 <= (dx2 > 0) ? 0 : 8;
+          end
+          else begin
+              if (dx2 > 0 && dy2 > 0) begin angle2 <= 2; end
+              else if (dx2 < 0 && dy2 > 0) begin angle2 <= 6; end
+              else if (dx2 < 0 && dy2 < 0) begin angle2 <= 10; end
+              else if (dx2 > 0 && dy2 < 0) begin angle2 <= 14; end
+            end
+            POC2 <= angle2; //point of contact of player 1 on player 2
+        if(bx1 == 0) begin
+            angle3 <= (by1 > 0) ? 4 : 12;//north or south
+            end
+            else if (by1 == 0) begin
+              angle3 <= (bx1 > 0) ? 0 : 8;
+            end
+            else begin
+              if (bx1 > 0 && by1 > 0) begin angle3 <= 2; end
+              else if (bx1 < 0 && by1 > 0) begin angle3 <= 6; end
+              else if (bx1 < 0 && by1 < 0) begin angle3 <= 10; end
+              else if (bx1 > 0 && by1 < 0) begin angle3 <= 14; end
+            end
+            POC3 <= angle3;     
+        if(b1x == 0) begin
+            angle4 <= (b1y > 0) ? 4 : 12;//north or south
+            end
+            else if (b1y == 0) begin
+              angle4 <= (b1x > 0) ? 0 : 8;
+            end
+            else begin
+              if (b1x > 0 && b1y > 0) begin angle4 <= 2; end
+              else if (b1x < 0 && b1y > 0) begin angle4 <= 6; end
+              else if (b1x < 0 && b1y < 0) begin angle4 <= 10; end
+              else if (b1x > 0 && b1y < 0) begin angle4 <= 14; end
+            end
+            POC4 <= angle4;     
+        if(bx2 == 0) begin
+            angle5 <= (by2 > 0) ? 4 : 12;//north or south
+            end
+            else if (by2 == 0) begin
+              angle5 <= (bx2 > 0) ? 0 : 8;
+            end
+            else begin
+              if (bx2 > 0 && by2 > 0) begin angle5 <= 2; end
+              else if (bx2 < 0 && by2 > 0) begin angle5 <= 6; end
+              else if (bx2 < 0 && by2 < 0) begin angle5 <= 10; end
+              else if (bx2 > 0 && by2 < 0) begin angle5 <= 14; end
+            end
+            POC5 <= angle5;     
+        if(b2x == 0) begin
+            angle6 <= (b2y > 0) ? 4 : 12;//north or south
+            end
+            else if (b2y == 0) begin
+              angle6 <= (b2x > 0) ? 0 : 8;
+            end
+            else begin
+              if (b2x > 0 && b2y > 0) begin angle6 <= 2; end
+              else if (b2x < 0 && b2y > 0) begin angle6 <= 6; end
+              else if (b2x < 0 && b2y < 0) begin angle6 <= 10; end
+              else if (b2x > 0 && b2y < 0) begin angle6 <= 14; end
+            end
+            POC6 <= angle6;     
+        end
+    
+wire [7:0] proximityx_p1p2, proximityy_p1p2, proximityx_p1b, 
+          proximityy_p1b, proximityx_p2b, proximityy_p2b;
+
+assign proximityx_p1p2 = (x1 > x2) ? (x1 - x2) : (x2 - x1);
+assign  proximityy_p1p2 = (y1 > y2) ? (y1 - y2): (y2 - y1);
+assign  proximityx_p1b = (x1 > bx) ? (x1 - bx) : (bx - x1);
+assign  proximityy_p1b = (y1 > by) ? (y1 -by) : (by - y1);
+assign  proximityx_p2b = (x2 > bx) ? (x2 - bx) : (bx - x2);
+assign  proximityy_p2b = (y2 > by) ? (y2 - by) : (by - y2);
+always @(posedge basys_clock) begin
+ /* proximityx_p1p2 <= (x1 > x2) ? (x1 - x2) : (x2 - x1);
+  proximityy_p1p2 <= (y1 > y2) ? (y1 - y2): (y2 - y1);
+  proximityx_p1b <= (x1 > bx) ? (x1 - bx) : (bx - x1);
+  proximityy_p1b <= (y1 > by) ? (y1 -by) : (by - y1);
+  proximityx_p2b <= (x2 > bx) ? (x2 - bx) : (bx - x2);
+  proximityy_p2b <= (y2 > by) ? (y2 - by) : (by - y2);*/
+  
+  if (proximityx_p1p2 <= 12 && proximityy_p1p2 <= 12) begin
+    collision_detected_p1p2 <= 1;
+  end
+  else begin
+    collision_detected_p1p2 <= 0;
+  end
+  
+  if (proximityx_p1b <= 10 && proximityy_p1b <= 10) begin
+    collision_detected_p1b <= 1;
+  end
+  else begin
+    collision_detected_p1b <= 0;
+  end
+  
+  if (proximityx_p2b <= 10 && proximityy_p2b <= 10) begin
+    collision_detected_p2b <= 1;
+  end
+  else begin
+    collision_detected_p2b <= 0;
+  end
+end
+
+  always @(posedge basys_clock) begin
+  if (collision_detected_p1p2) begin
+    if (IP1 == 0 && IP2 != 0) begin
+        OP1 <= IP2;
+        OP2 <= 3;
+        RD1 <= (POC1 + 8) % 16;
+    end
+    if (IP1 != 0 && IP2 == 0) begin
+      OP1 <= 3;
+      OP2 <= IP1;
+      RD2 <= (POC2 +8) % 16;
+    end
+    if( IP1 != 0 && IP2 != 0) begin
+      OP1 <= IP2;
+      OP2 <= IP1;
+      RD2 <= ID1;
+      RD1 <= ID2;
+    end
+  end   
+  else if (collision_detected_p1b) begin
+    if (IP1 != 0 && IPB == 0) begin
+      OP1 <= 1;
+      OPB <= IP1+7;
+      RDB <= (POC3 + 8) % 16;
+    end
+    else if (IP1 == 0 && IPB != 0) begin
+      OP1 <= IPB;
+      OPB <= 1;
+      RD1 <= (POC4 + 8) %16;
+    end
+    else if (IP1 != 0 && IPB != 0) begin
+      OP1 <= IPB;
+      OPB <= IP1;
+      RD1 <= IDB;
+      RDB <= ID1;
+    end
+  end
+  else if (collision_detected_p2b) begin
+    if (IP2 != 0 && IPB == 0) begin
+        OP2 <= 1;
+        OPB <= IP2 + 7;
+        RDB <= (POC5 + 8) % 16;
+    end
+    if (IP2 == 0 && IPB != 0) begin
+        OP2 <= IPB;
+        OPB <= 1;
+        RD2 <= (POC6 + 8) % 16;
+    end
+    if (IP2 != 0 && IPB != 0) begin
+        OP2 <= IPB;
+        OPB <= IP2;
+        RD2 <= IDB;
+        RDB <= ID2;
+    end
+  end
+  if (x1 == x2 && y1 == y2) begin
+  OP1 <= 5;
+  OP2 <= 5;
+  RD1 <= 12;
+  RD2 <= 4;
+  end
+  /*if (bx <= x1 + 6 && bx >= x1 - 6 && by <= y1 + 6 && by >= y1 - 6) begin
+  OP1 <= 5; 
+  OPB <= 5;
+  RD1 <= 12;
+  RDB <= 4;
+  end
+  if (bx <= x2 + 6 && bx >= x1 - 6 && by <= y1 + 6 && by >= y1 - 6) begin
+  OP2 <= 5;
+  OPB <= 5;
+  RD2 <= 12;
+  RDB <= 4;
+  end*/
+end
+endmodule
