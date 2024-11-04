@@ -9,70 +9,68 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0]
     wire [15:0] oled_data_P1, oled_data_P2, oled_data_field, oled_data_ball, oled_data_select, oled_data_menu;
     wire [4:0] IP1,IP2,IPB,ID1,ID2,IDB, RP1,RP2,RPB,RD1,RD2,RDB;
     reg reset = 0; 
-    wire clk_6p25, clk_20, clk_25M;
+    wire clk_6p25, clk_20, clk_25M, clk_1Hz;
     reg turn_P1 = 1,turn_P2 = 0;
     wire [4:0] P1_selected, P2_selected;
     wire [7:0] x1,y1,x2,y2,bx,by;
     wire [7:0] x,y;
     reg kick_off = 0;
     wire collision_detected_P1P2, collision_detected_P1ball, collision_detected_P2ball;
-    //wire after_collision_P1, after_collision_P2, after_collision_ball;
     wire [2:0] game_set;
     wire [4:0] menu_count;
     wire scored;
     wire [3:0] display;
     wire [7:0] seg_score;
     wire [3:0] an_score;
-    wire collision_detected_P1, collision_detected_P2, collision_detected_B;
+    wire collision_detected_P1, collision_detected_P2, collision_detected_ball;
     assign x = pixel_index % 96;
     assign y = pixel_index / 96;
     
     flexible_clock unit6p25Mhz (basys_clock, 7, clk_6p25);
     flexible_clock unit25Mhz (basys_clock, 1, clk_25M);
     flexible_clock unit20hz (basys_clock, 2499999, clk_20);
+    flexible_clock unit_1Hz (basys_clock,49999998, clk_1Hz);
+
     
-    //goal_detection unit_goal_detection(basys_clock, menu_count, bx, by, scored, display);
-    //score_display unit_score_display(basys_clock,  menu_count, display, scored, game_set, seg_score, an_score);
     
     menu unit_menu(game_set, pixel_index, btnR, btnL, btnC,btnU, btnD, basys_clock, oled_data_menu, menu_count);
     soccer_field unit_field(basys_clock,reset, pixel_index, oled_data_field);
     
     character_select unit_select (pixel_index, basys_clock, btnC, sw[15:0], led_select, oled_data_select, P1_selected, P2_selected);
-    //collision_detection_test unit_collison(basys_clock,x1, y1, x2, y2,bx, by,ID1, ID2, IDB, IP1, IP2, IPB,6,6,2,RD1, RD2, RDB, RP1, RP2, RPB,collision_detected_P1P2, collision_detected_P1ball, collision_detected_P2ball);
-    //collision_detection_v2 unit_collision(basys_clock,x1, y1, x2, y2, bx, by, IP1, IP2, IPB, ID1, ID2, IDB,  RD1, RD2, RDB, RP1, RP2, RPB,collision_detected_P1P2, collision_detected_P1ball,collision_detected_P2ball );
     
-    collision_detection_v3 unit_collision(basys_clock, x1, y1, x2, y2, bx, by,  IP1, IP2, IPB, ID1, ID2, IDB,  RD1, RD2, RDB,  RP1, RP2, RPB, collision_detected_P1P2,collision_detected_P1ball, collision_detected_P2ball );
+    collision_detection_v3 unit_collision(basys_clock,x1, y1, x2, y2, bx, by, IP1, IP2, IPB, ID1, ID2, IDB,  RD1, RD2, RDB, RP1, RP2, RPB,collision_detected_P1P2, collision_detected_P1ball,collision_detected_P2ball );
     
     assign collision_detected_P1 = (collision_detected_P1P2 || collision_detected_P1ball);
     assign collision_detected_P2 = (collision_detected_P1P2 || collision_detected_P2ball);
-    assign collision_detected_B = (collision_detected_P1ball || collision_detected_P2ball);
+    assign collision_detected_ball = (collision_detected_P1ball || collision_detected_P2ball);
     
-    aiming unit_P1(menu_count, scored, kick_off, collision_detected_P1, RD1, RP1, 20, 32, 6, turn_P1, pixel_index, P1_selected, basys_clock, btnU, btnD, btnC, ID1, led_P1, IP1, oled_data_P1, x1, y1);
-    aiming unit_P2(menu_count, scored, kick_off, collision_detected_P2 , RD2, RP2, 75, 32, 6, turn_P2, pixel_index, P2_selected, basys_clock, btnU, btnD, btnC, ID2, led_P2, IP2, oled_data_P2, x2, y2);
-    aiming unit_B(menu_count, scored, kick_off, collision_detected_B, RDB, RPB, 48, 32, 2, 0, pixel_index, 5, basys_clock, btnU, btnD, btnC, IDB, led_ball, IPB, oled_data_ball, bx, by);
+    aiming unit_P1(sw, menu_count, scored, kick_off, collision_detected_P1, RD1, RP1, 20, 32, 6, turn_P1, pixel_index, P1_selected, basys_clock, btnU, btnD, btnC, ID1, led_P1, IP1, oled_data_P1, x1, y1);
+    aiming unit_P2(sw, menu_count, scored, kick_off, collision_detected_P2 , RD2, RP2, 75, 32, 6, turn_P2, pixel_index,  P2_selected, basys_clock, btnU, btnD, btnC, ID2, led_P2, IP2, oled_data_P2, x2, y2);
+    aiming unit_ball(sw, menu_count, scored, kick_off, collision_detected_ball, RDB, RPB, 48, 32, 2, 0, pixel_index, 5, basys_clock, btnU, btnD, btnC, IDB, led_ball, IPB, oled_data_ball, bx, by);
+    
+    goal_detection unit_goal_detection(basys_clock,sw[8:7], menu_count, bx, by,  scored, display);
+    //goal_detection unit_goal_detection(basys_clock, menu_count, bx, by, scored, display);
+    score_display unit_score_display(basys_clock,  menu_count, display, scored, game_set, seg_score, an_score);
 
-
+    
     wire btnC_debounced, btnL_debounced, btnR_debounced;
     debounce unit_btnC_d (basys_clock, btnC, btnC_debounced);
     debounce unit_btnL_d (basys_clock, btnL, btnL_debounced);
     debounce unit_btnR_d (basys_clock, btnR, btnR_debounced);
-    
+    reg golden_goal;
+    reg [27:0] golden_goal_counter = 0;
     reg [1:0] turn_state = 0;  
     reg [27:0] delay_counter = 0;  
     
     // turn loop
     always @ (posedge basys_clock) begin
-        
-        if (collision_detected_P1) begin led[1] <= 1; end
-        if (collision_detected_P2) begin led[2] <= 1; end
-        if (collision_detected_B) begin led[3] <= 1; end
-
-        
+    
         if (menu_count == 0) begin
             kick_off <= 0; // Reset game start
             turn_state <= 0; // Reset turn state
             turn_P1 <= 1; // Player 1's turn
             turn_P2 <= 0;
+            golden_goal <= 0;
         end else if (kick_off == 0) begin
             if ((P1_selected != P2_selected) && btnL_debounced && btnR_debounced) begin
                 kick_off <= 1; 
@@ -119,7 +117,7 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0]
 
     // main oled data loop
     always @(posedge clk_25M) begin
-        if (menu_count < 6 || menu_count > 9 || menu_count == 11 || menu_count == 12) begin
+        if (menu_count < 6 || menu_count == 11 || menu_count == 12) begin
             oled_data <= oled_data_menu;
         end else if (menu_count == 6 || menu_count == 7) begin
             if (oled_data_select != 16'b0000000000000001) begin
@@ -140,16 +138,39 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0]
         end else if ((kick_off && menu_count == 9 )||(kick_off && menu_count == 10 )) begin
             oled_data <= oled_data_menu;       
         end else if (kick_off && menu_count == 13) begin
-            if (oled_data_P1 != 16'b0000000000000001) begin
-                oled_data <= oled_data_P1;
-            end else if (oled_data_P2 != 16'b0000000000000001) begin
-                oled_data <= oled_data_P2;
-            end else if (oled_data_ball != 16'b0000000000000001) begin
-                oled_data <= oled_data_ball;
-            end else if (oled_data_menu != 16'b0000000000000000) begin
-                oled_data <= oled_data_menu;
+            // Start the 2-second delay counter
+            if (!golden_goal) begin
+                // During the initial 2-second delay, show menu, P1, P2, ball, or field
+                if (golden_goal_counter < 50000000) begin
+                    golden_goal_counter <= golden_goal_counter + 1;
+                    // Display menu if it has data, otherwise check P1, P2, ball, then field
+                    if (oled_data_menu != 16'b0000000000000000) begin
+                        oled_data <= oled_data_menu;
+                    end else if (oled_data_P1 != 16'b0000000000000001) begin
+                        oled_data <= oled_data_P1;
+                    end else if (oled_data_P2 != 16'b0000000000000001) begin
+                        oled_data <= oled_data_P2;
+                    end else if (oled_data_ball != 16'b0000000000000001) begin
+                        oled_data <= oled_data_ball;
+                    end else begin
+                        oled_data <= oled_data_field;
+                    end
+                end else begin
+                    // After 2 seconds, set golden_goal and reset counter
+                    golden_goal <= 1;
+                    golden_goal_counter <= 0;
+                end
             end else begin
-                oled_data <= oled_data_field;
+                // After the delay, show only P1, P2, ball, or field data
+                if (oled_data_P1 != 16'b0000000000000001) begin
+                    oled_data <= oled_data_P1;
+                end else if (oled_data_P2 != 16'b0000000000000001) begin
+                    oled_data <= oled_data_P2;
+                end else if (oled_data_ball != 16'b0000000000000001) begin
+                    oled_data <= oled_data_ball;
+                end else begin
+                    oled_data <= oled_data_field;
+                end
             end
         end
     end
@@ -178,6 +199,8 @@ module Top_Student (input basys_clock, btnC, btnU, btnR, btnL, btnD,input [15:0]
     );
 
 endmodule
+
+
 
 
 
